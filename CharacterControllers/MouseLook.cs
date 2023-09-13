@@ -15,7 +15,7 @@ namespace OmnicatLabs.CharacterControllers
             Cursor.lockState = CursorLockMode.Locked;
         }
 
-        private void Update()
+        private void LateUpdate()
         {
             float mouseX = Input.GetAxis("Mouse X") * sensitivity * Time.deltaTime;
             float mouseY = Input.GetAxis("Mouse Y") * sensitivity * Time.deltaTime;

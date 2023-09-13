@@ -109,9 +109,6 @@ namespace OmnicatLabs.CharacterControllers
         [Tooltip("Modifier on the movement speed when crouched.")]
         public float crouchSpeedModifier = 0.5f;
         public float slideSpeed = 10f;
-        public float slideSpeedReduction = .999f;
-        [Tooltip("The threshold that controls when a slide is forced to end. The higher the number, the quicker the slide will stop")]
-        public float slideStopThreshold = 1.5f;
 
 
         internal Vector3 movementDir;
@@ -127,7 +124,6 @@ namespace OmnicatLabs.CharacterControllers
         internal RaycastHit slopeHit;
         internal float groundAngle;
         internal bool isCrouching = false;
-        internal bool slideKeyDown = false;
 
         private void Start()
         {
@@ -221,7 +217,7 @@ namespace OmnicatLabs.CharacterControllers
                 sprinting = true;
             }
 
-            if (context.canceled && slideKeyDown)
+            if (context.canceled)
             {
                 sprinting = false;
             }
@@ -249,15 +245,6 @@ namespace OmnicatLabs.CharacterControllers
 
         public void OnCrouch(InputAction.CallbackContext context)
         {
-            if (context.performed && isGrounded)
-            {
-                slideKeyDown = true;
-            }
-            if (context.canceled)
-            {
-                slideKeyDown = false;
-            }
-
             if (useToggle)
             {
                 if (context.performed && isGrounded)

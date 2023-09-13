@@ -11,8 +11,6 @@ namespace OmnicatLabs.CharacterControllers
         protected CharacterController controller;
         protected Rigidbody rb;
         protected AnimationTriggers triggers;
-        protected static Vector3 lastMovementDir;
-        protected static bool lastSprinting = false;
 
         public virtual void OnStateStart<T>(StatefulObject<T> self) where T : IState
         {
@@ -81,11 +79,7 @@ namespace OmnicatLabs.CharacterControllers
 
             public override void OnStateUpdate<T>(StatefulObject<T> self)
             {
-                lastSprinting = controller.sprinting;
-                if (controller.movementDir != Vector3.zero)
-                {
-                    lastMovementDir = controller.movementDir;
-                }
+
                 if (controller.movementDir.z <= 0)
                 {
                     controller.sprinting = false;
@@ -106,12 +100,8 @@ namespace OmnicatLabs.CharacterControllers
                     controller.ChangeState(CharacterStates.Slide);
                 }
 
-                if (rb.velocity.magnitude >= 5)
-                {
-                    rb.velocity = rb.velocity.normalized * 5;
-                }
                 //reset velocity every frame since we don't want to build any acceleration
-                //rb.velocity = new Vector3(0f, rb.velocity.y, 0f);
+                rb.velocity = new Vector3(0f, rb.velocity.y, 0f);
             }
 
             private Vector3 GetSlopeMoveDir()
@@ -331,7 +321,7 @@ namespace OmnicatLabs.CharacterControllers
                 airTime = 0f;
 
                 rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
-                rb.AddForce((Vector3.up + rb.velocity.normalized) * controller.baseJumpForce , ForceMode.Impulse);
+                rb.AddForce((Vector3.up * controller.baseJumpForce), ForceMode.Impulse);
             }
 
             public override void OnStateExit<T>(StatefulObject<T> self)
@@ -478,9 +468,19 @@ namespace OmnicatLabs.CharacterControllers
         {
             public CrouchState(AnimationTriggers _triggers) : base(_triggers) { }
 
+            private float currentCrouchTime;
+            private float lastLerpPos;
+            private float lerpPos;
+            private bool lerpFinished = false;
+            private bool triggered = false;
             private float originalCamHeight;
             private float originalColHeight;
             private bool inCrouch = false;
+
+            /*TODO
+             * Shrink collider with crouch
+             * Transition to crouch move state
+             */
 
             public override void OnStateStart<T>(StatefulObject<T> self)
             {
@@ -493,6 +493,9 @@ namespace OmnicatLabs.CharacterControllers
             {
                 base.OnStateEnter(self);
 
+                currentCrouchTime = controller.toCrouchSpeed;
+                lerpFinished = false;
+                triggered = false;
                 triggers.TriggerAll(controller.animator, AnimationTriggers.TriggerFlag.Start);
                 //originalCamPos = controller.mainCam.transform.localPosition;
                 //originalColliderHeight = controller.modelCollider.height;
@@ -513,21 +516,19 @@ namespace OmnicatLabs.CharacterControllers
             {
                 if (!inCrouch && controller.isCrouching)
                 {
-                    controller.modelCollider.TweenHeight(controller.crouchHeight, controller.toCrouchSpeed, () => { }, EasingFunctions.Ease.EaseOutQuart);
-                    controller.mainCam.transform.TweenYPos(controller.crouchHeight, controller.toCrouchSpeed, null, EasingFunctions.Ease.EaseOutQuart);
-                    //controller.mainCam.transform.TweenPosition(new Vector3(controller.mainCam.transform.position.x, controller.crouchHeight, controller.mainCam.transform.position.z), controller.toCrouchSpeed, () => Debug.Log("Completed"), EasingFunctions.Ease.EaseOutQuart);
+                    controller.modelCollider.TweenHeight(controller.crouchHeight, controller.toCrouchSpeed, () => Debug.Log("Completed Collider"), EasingFunctions.Ease.EaseOutQuart);
+                    controller.mainCam.transform.TweenPosition(new Vector3(controller.mainCam.transform.position.x, controller.crouchHeight, controller.mainCam.transform.position.z), controller.toCrouchSpeed, () => Debug.Log("Completed"), EasingFunctions.Ease.EaseOutQuart);
                     inCrouch = true;
                 }
 
                 if (inCrouch && !controller.isCrouching)
                 {
-                    controller.modelCollider.TweenHeight(originalColHeight, controller.toCrouchSpeed, () => { }, EasingFunctions.Ease.EaseOutQuart);
-                    controller.mainCam.transform.TweenYPos(originalCamHeight, controller.toCrouchSpeed, null, EasingFunctions.Ease.EaseOutQuart);
-                    //controller.mainCam.transform.TweenPosition(
-                    //    new Vector3(controller.mainCam.transform.position.x, originalCamHeight, controller.mainCam.transform.position.z),
-                    //    controller.toCrouchSpeed,
-                    //    () => Debug.Log("Completed"), EasingFunctions.Ease.EaseOutQuart
-                    //    );
+                    controller.modelCollider.TweenHeight(originalColHeight, controller.toCrouchSpeed, () => Debug.Log("Completed Collider"), EasingFunctions.Ease.EaseOutQuart);
+                    controller.mainCam.transform.TweenPosition(
+                        new Vector3(controller.mainCam.transform.position.x, originalCamHeight, controller.mainCam.transform.position.z),
+                        controller.toCrouchSpeed,
+                        () => Debug.Log("Completed"), EasingFunctions.Ease.EaseOutQuart
+                        );
                     inCrouch = false;
                 }
 
@@ -579,60 +580,32 @@ namespace OmnicatLabs.CharacterControllers
 
         public class SlideState : CharacterState
         {
-            private float originalHeight;
-            private float originalCamPos;
-            private bool sliding = false;
-            private float falloff;
-            private Vector3 slideDir;
             public override void OnStateStart<T>(StatefulObject<T> self)
             {
                 base.OnStateStart(self);
-                originalHeight = controller.modelCollider.height;
-                originalCamPos = controller.mainCam.transform.position.y;
             }
 
             public override void OnStateEnter<T>(StatefulObject<T> self)
             {
                 base.OnStateEnter(self);
-                falloff = controller.slideSpeed;
-                slideDir = controller.transform.forward;
 
-                controller.modelCollider.TweenHeight(controller.crouchHeight, .2f, () => { }, EasingFunctions.Ease.EaseOutQuart);
-                //controller.mainCam.transform.TweenPosition(new Vector3(controller.mainCam.transform.position.x, controller.crouchHeight, controller.mainCam.transform.position.z), controller.toCrouchSpeed, () => { }, EasingFunctions.Ease.EaseOutQuart);
+                controller.modelCollider.TweenHeight(controller.crouchHeight, controller.toCrouchSpeed, () => Debug.Log("Completed Collider"), EasingFunctions.Ease.EaseOutQuart);
+                rb.AddForce(controller.transform.forward * controller.slideSpeed, ForceMode.Impulse);
             }
 
             public override void OnStateExit<T>(StatefulObject<T> self)
             {
-                Debug.Log("Called");
-                controller.modelCollider.TweenHeight(originalHeight, .2f, () => { }, EasingFunctions.Ease.EaseOutQuart);
-                //controller.mainCam.transform.TweenPosition(new Vector3(controller.mainCam.transform.position.x, originalCamPos, controller.mainCam.transform.position.z), controller.toCrouchSpeed, () => Debug.Log("Completed"), EasingFunctions.Ease.EaseOutQuart);
+                
             }
 
             public override void OnStateFixedUpdate<T>(StatefulObject<T> self)
             {
-                if (controller.slideKeyDown && falloff > controller.slideStopThreshold)
-                {
-                    sliding = true;
-                    rb.AddForce(slideDir * controller.slideSpeed * falloff * Time.deltaTime);
-                    falloff *= controller.slideSpeedReduction;
-                }
-                else
-                {
-                    sliding = false;
-                }
+               
             }
 
             public override void OnStateUpdate<T>(StatefulObject<T> self)
             {
-                if (sliding == false)
-                {
-                    controller.movementDir = lastMovementDir;
-                    controller.ChangeState(CharacterStates.Moving);
-                }
-                if (rb.velocity.magnitude > 5)
-                {
-                    rb.velocity = rb.velocity.normalized * 5;
-                }
+                
             }
         }
     }

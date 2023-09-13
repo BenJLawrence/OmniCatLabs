@@ -8,25 +8,6 @@ namespace OmnicatLabs.Tween
 {
     public static class TransformExtensions
     {
-        public static void TweenYPos(this Transform transform, float newY, float amountOfTime, UnityAction onComplete = null, EasingFunctions.Ease easing = EasingFunctions.Ease.Linear)
-        {
-            float startingY = transform.position.y;
-            OmniTween.tweens.Add(new Tween(amountOfTime, onComplete, (tween) =>
-            {
-                if (tween.timeElapsed < tween.tweenTime)
-                {
-                    transform.position = new Vector3(transform.position.x, EasingFunctions.GetEasingFunction(easing).Invoke(startingY, newY, tween.timeElapsed / tween.tweenTime), transform.position.z);
-                    //transform.position = Vector3.Lerp(startingPos, newPosition, tween.timeElapsed / tween.tweenTime);
-                    tween.timeElapsed += Time.deltaTime;
-                }
-                else
-                {
-                    transform.position = new Vector3(transform.position.x, newY, transform.position.z);
-                    tween.completed = true;
-                }
-            }));
-        }
-
         public static void TweenPosition(this Transform transform, Vector3 newPosition, float amountOfTime, UnityAction onComplete, EasingFunctions.Ease easing = EasingFunctions.Ease.Linear)
         {
             Vector3 startingPos = transform.position;
@@ -164,7 +145,7 @@ namespace OmnicatLabs.Tween
             foreach (Tween tween in tweens)
             {
                 tween.DoTween();
-                if (tween.completed && tween.onComplete != null)
+                if (tween.completed)
                 {
                     tween.onComplete.Invoke();
                 }
