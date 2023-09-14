@@ -317,6 +317,18 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 34.98, y: 0, z: 0}
+--- !u!114 &172653707 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3937644314323181460, guid: 0e8606aaa08d4a34d8e92457ee702bba,
+    type: 3}
+  m_PrefabInstance: {fileID: 3937644314178885564}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 279af8afb26cf8e48ad24c705e92cf60, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &349651772
 GameObject:
   m_ObjectHideFlags: 0
@@ -1088,8 +1100,18 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3937644314323181460, guid: 0e8606aaa08d4a34d8e92457ee702bba,
         type: 3}
+      propertyPath: useToggle
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3937644314323181460, guid: 0e8606aaa08d4a34d8e92457ee702bba,
+        type: 3}
       propertyPath: slideSpeed
-      value: 15
+      value: 200
+      objectReference: {fileID: 0}
+    - target: {fileID: 3937644314323181460, guid: 0e8606aaa08d4a34d8e92457ee702bba,
+        type: 3}
+      propertyPath: maxInAirSpeed
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 3937644314323181460, guid: 0e8606aaa08d4a34d8e92457ee702bba,
         type: 3}
@@ -1100,6 +1122,21 @@ PrefabInstance:
         type: 3}
       propertyPath: toCrouchSpeed
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3937644314323181460, guid: 0e8606aaa08d4a34d8e92457ee702bba,
+        type: 3}
+      propertyPath: inAirMoveSpeed
+      value: 700
+      objectReference: {fileID: 0}
+    - target: {fileID: 3937644314323181460, guid: 0e8606aaa08d4a34d8e92457ee702bba,
+        type: 3}
+      propertyPath: slideStopThreshold
+      value: 20
+      objectReference: {fileID: 0}
+    - target: {fileID: 3937644314323181460, guid: 0e8606aaa08d4a34d8e92457ee702bba,
+        type: 3}
+      propertyPath: slideSpeedReduction
+      value: 0.99
       objectReference: {fileID: 0}
     - target: {fileID: 3937644314323181464, guid: 0e8606aaa08d4a34d8e92457ee702bba,
         type: 3}
@@ -1155,6 +1192,41 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3937644314323181465, guid: 0e8606aaa08d4a34d8e92457ee702bba,
+        type: 3}
+      propertyPath: m_ActionEvents.Array.data[3].m_PersistentCalls.m_Calls.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3937644314323181465, guid: 0e8606aaa08d4a34d8e92457ee702bba,
+        type: 3}
+      propertyPath: m_ActionEvents.Array.data[3].m_PersistentCalls.m_Calls.Array.data[1].m_Mode
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3937644314323181465, guid: 0e8606aaa08d4a34d8e92457ee702bba,
+        type: 3}
+      propertyPath: m_ActionEvents.Array.data[3].m_PersistentCalls.m_Calls.Array.data[1].m_Target
+      value: 
+      objectReference: {fileID: 172653707}
+    - target: {fileID: 3937644314323181465, guid: 0e8606aaa08d4a34d8e92457ee702bba,
+        type: 3}
+      propertyPath: m_ActionEvents.Array.data[3].m_PersistentCalls.m_Calls.Array.data[1].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 3937644314323181465, guid: 0e8606aaa08d4a34d8e92457ee702bba,
+        type: 3}
+      propertyPath: m_ActionEvents.Array.data[3].m_PersistentCalls.m_Calls.Array.data[1].m_MethodName
+      value: OnMove
+      objectReference: {fileID: 0}
+    - target: {fileID: 3937644314323181465, guid: 0e8606aaa08d4a34d8e92457ee702bba,
+        type: 3}
+      propertyPath: m_ActionEvents.Array.data[3].m_PersistentCalls.m_Calls.Array.data[1].m_TargetAssemblyTypeName
+      value: OmnicatLabs.CharacterControllers.CharacterController, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 3937644314323181465, guid: 0e8606aaa08d4a34d8e92457ee702bba,
+        type: 3}
+      propertyPath: m_ActionEvents.Array.data[3].m_PersistentCalls.m_Calls.Array.data[1].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
       objectReference: {fileID: 0}
     - target: {fileID: 3937644314323181471, guid: 0e8606aaa08d4a34d8e92457ee702bba,
         type: 3}

@@ -268,6 +268,7 @@ namespace OmnicatLabs.StatefulObject
         {
             //call the exit on the current state
             state.data.OnStateExit(this);
+            Debug.Log((state.name, "Exiting"));
 
             //change the state
             state = newState;
