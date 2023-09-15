@@ -513,6 +513,7 @@ namespace OmnicatLabs.CharacterControllers
             {
                 if (!inCrouch && controller.isCrouching)
                 {
+                    Debug.Log("crouching");
                     controller.modelCollider.TweenHeight(controller.crouchHeight, controller.toCrouchSpeed, () => { }, EasingFunctions.Ease.EaseOutQuart);
                     controller.mainCam.transform.TweenYPos(controller.crouchHeight, controller.toCrouchSpeed, null, EasingFunctions.Ease.EaseOutQuart);
                     //controller.mainCam.transform.TweenPosition(new Vector3(controller.mainCam.transform.position.x, controller.crouchHeight, controller.mainCam.transform.position.z), controller.toCrouchSpeed, () => Debug.Log("Completed"), EasingFunctions.Ease.EaseOutQuart);
@@ -521,6 +522,7 @@ namespace OmnicatLabs.CharacterControllers
 
                 if (inCrouch && !controller.isCrouching)
                 {
+                    Debug.Log("uncrouching");
                     controller.modelCollider.TweenHeight(originalColHeight, controller.toCrouchSpeed, () => { }, EasingFunctions.Ease.EaseOutQuart);
                     controller.mainCam.transform.TweenYPos(originalCamHeight, controller.toCrouchSpeed, null, EasingFunctions.Ease.EaseOutQuart);
                     //controller.mainCam.transform.TweenPosition(
@@ -529,6 +531,7 @@ namespace OmnicatLabs.CharacterControllers
                     //    () => Debug.Log("Completed"), EasingFunctions.Ease.EaseOutQuart
                     //    );
                     inCrouch = false;
+                    controller.ChangeState(CharacterStates.Idle);
                 }
 
                 //if (controller.isCrouching)
@@ -598,6 +601,7 @@ namespace OmnicatLabs.CharacterControllers
                 slideDir = controller.transform.forward;
 
                 controller.modelCollider.TweenHeight(controller.crouchHeight, .2f, () => { }, EasingFunctions.Ease.EaseOutQuart);
+                controller.mainCam.transform.TweenYPos(controller.crouchHeight, .2f, () => { }, EasingFunctions.Ease.EaseOutQuart);
                 //controller.mainCam.transform.TweenPosition(new Vector3(controller.mainCam.transform.position.x, controller.crouchHeight, controller.mainCam.transform.position.z), controller.toCrouchSpeed, () => { }, EasingFunctions.Ease.EaseOutQuart);
             }
 
@@ -605,6 +609,7 @@ namespace OmnicatLabs.CharacterControllers
             {
                 Debug.Log("Called");
                 controller.modelCollider.TweenHeight(originalHeight, .2f, () => { }, EasingFunctions.Ease.EaseOutQuart);
+                controller.mainCam.transform.TweenYPos(originalCamPos, .2f, () => { }, EasingFunctions.Ease.EaseOutQuart);
                 //controller.mainCam.transform.TweenPosition(new Vector3(controller.mainCam.transform.position.x, originalCamPos, controller.mainCam.transform.position.z), controller.toCrouchSpeed, () => Debug.Log("Completed"), EasingFunctions.Ease.EaseOutQuart);
             }
 
@@ -615,6 +620,7 @@ namespace OmnicatLabs.CharacterControllers
                     sliding = true;
                     rb.AddForce(slideDir * controller.slideSpeed * falloff * Time.deltaTime);
                     falloff *= controller.slideSpeedReduction;
+                    Debug.Log(falloff);
                 }
                 else
                 {
