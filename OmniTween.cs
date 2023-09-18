@@ -8,6 +8,40 @@ namespace OmnicatLabs.Tween
 {
     public static class TransformExtensions
     {
+        public static void FadeIn(this CanvasGroup cg, float amountOfTime, UnityAction onComplete = null, EasingFunctions.Ease easing = EasingFunctions.Ease.Linear)
+        {
+            OmniTween.tweens.Add(new Tween(amountOfTime, onComplete, (tween) =>
+            {
+                if (tween.timeElapsed < tween.tweenTime)
+                {
+                    cg.alpha = EasingFunctions.GetEasingFunction(easing).Invoke(0f, 1f, tween.timeElapsed / tween.tweenTime);
+                    tween.timeElapsed += Time.deltaTime;
+                }
+                else
+                {
+                    cg.alpha = 1f;
+                    tween.completed = true;
+                }
+            }));
+        }
+
+        public static void FadeOut(this CanvasGroup cg, float amountOfTime, UnityAction onComplete = null, EasingFunctions.Ease easing = EasingFunctions.Ease.Linear)
+        {
+            OmniTween.tweens.Add(new Tween(amountOfTime, onComplete, (tween) =>
+            {
+                if (tween.timeElapsed < tween.tweenTime)
+                {
+                    cg.alpha = EasingFunctions.GetEasingFunction(easing).Invoke(1f, 0f, tween.timeElapsed / tween.tweenTime);
+                    tween.timeElapsed += Time.deltaTime;
+                }
+                else
+                {
+                    cg.alpha = 0f;
+                    tween.completed = true;
+                }
+            }));
+        }
+
         public static void TweenYPos(this Transform transform, float newY, float amountOfTime, UnityAction onComplete = null, EasingFunctions.Ease easing = EasingFunctions.Ease.Linear)
         {
             float startingY = transform.position.y;

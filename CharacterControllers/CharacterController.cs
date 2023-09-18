@@ -140,7 +140,7 @@ namespace OmnicatLabs.CharacterControllers
             GroundCheck();
             SlopeCheck();
             WallCheck();
-            Debug.Log(state);
+            //Debug.Log(state);
         }
 
         protected override void FixedUpdate()

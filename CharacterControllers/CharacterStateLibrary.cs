@@ -607,7 +607,7 @@ namespace OmnicatLabs.CharacterControllers
 
             public override void OnStateExit<T>(StatefulObject<T> self)
             {
-                Debug.Log("Called");
+                //Debug.Log("Called");
                 controller.modelCollider.TweenHeight(originalHeight, .2f, () => { }, EasingFunctions.Ease.EaseOutQuart);
                 controller.mainCam.transform.TweenYPos(originalCamPos, .2f, () => { }, EasingFunctions.Ease.EaseOutQuart);
                 //controller.mainCam.transform.TweenPosition(new Vector3(controller.mainCam.transform.position.x, originalCamPos, controller.mainCam.transform.position.z), controller.toCrouchSpeed, () => Debug.Log("Completed"), EasingFunctions.Ease.EaseOutQuart);
@@ -620,7 +620,7 @@ namespace OmnicatLabs.CharacterControllers
                     sliding = true;
                     rb.AddForce(slideDir * controller.slideSpeed * falloff * Time.deltaTime);
                     falloff *= controller.slideSpeedReduction;
-                    Debug.Log(falloff);
+                    //Debug.Log(falloff);
                 }
                 else
                 {
