@@ -37,7 +37,7 @@ namespace OmnicatLabs.StatefulObject
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="self">A reference to the controller object</param>
-        public void OnStateStart<T>(StatefulObject<T> self) where T : IState;
+        public void OnStateInit<T>(StatefulObject<T> self) where T : IState;
         /// <summary>
         /// Called once upon entry every time this state is entered.
         /// </summary>
@@ -222,11 +222,16 @@ namespace OmnicatLabs.StatefulObject
             //Because each generic definition of a State is treated as a different type, there should only be one class that inherits from the State hence index 0
             var fieldList = Assembly.GetAssembly(typeof(State<T>)).GetTypes()
                     .Where(type => type.IsClass && !type.IsAbstract && type.IsSubclassOf(typeof(State<T>))).ToList()[0].GetFields();
+            for (int i = 0; i < fieldList.Length; i++)
+            {
+                var field = (State<T>)fieldList[i].GetValue(null);
+                field.data.OnStateInit(this);
+            }
             var stateDefault = new List<FieldInfo>(fieldList).Find(field => Attribute.IsDefined(field, typeof(DefaultStateAttribute)));
             if (stateDefault != null)   //check to make sure the states we check had a default attribute
             {
                 state = (State<T>)stateDefault.GetValue(null);
-                state.data.OnStateStart(this);
+                //state.data.OnStateInit(this);
                 state.data.OnStateEnter(this);
             }
 
@@ -274,7 +279,7 @@ namespace OmnicatLabs.StatefulObject
 
             if (state.firstTime)
             {
-                state.data.OnStateStart(this);
+                //state.data.OnStateInit(this);
                 state.firstTime = false;
             }
 

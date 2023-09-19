@@ -14,7 +14,7 @@ namespace OmnicatLabs.CharacterControllers
         protected static Vector3 lastMovementDir;
         protected static bool lastSprinting = false;
 
-        public virtual void OnStateStart<T>(StatefulObject<T> self) where T : IState
+        public virtual void OnStateInit<T>(StatefulObject<T> self) where T : IState
         {
             controller = self.GetComponent<CharacterController>();
             rb = controller.GetComponent<Rigidbody>();
@@ -38,9 +38,9 @@ namespace OmnicatLabs.CharacterControllers
     {
         public class MoveState : CharacterState
         {
-            public override void OnStateStart<T>(StatefulObject<T> self)
+            public override void OnStateInit<T>(StatefulObject<T> self)
             {
-                base.OnStateStart(self);
+                base.OnStateInit(self);
             }
 
             public override void OnStateEnter<T>(StatefulObject<T> self)
@@ -206,9 +206,9 @@ namespace OmnicatLabs.CharacterControllers
             private float currentTime;
             private bool canFall = false;
 
-            public override void OnStateStart<T>(StatefulObject<T> self)
+            public override void OnStateInit<T>(StatefulObject<T> self)
             {
-                base.OnStateStart(self);
+                base.OnStateInit(self);
 
                 controller.onAirJump.AddListener(DoAirJump);
                 controller.onGrounded.AddListener(HandleGrounded);
@@ -389,9 +389,9 @@ namespace OmnicatLabs.CharacterControllers
 
             public CrouchWalkState(AnimationTriggers triggers) : base(triggers) { }
 
-            public override void OnStateStart<T>(StatefulObject<T> self)
+            public override void OnStateInit<T>(StatefulObject<T> self)
             {
-                base.OnStateStart(self);
+                base.OnStateInit(self);
             }
 
             public override void OnStateEnter<T>(StatefulObject<T> self)
@@ -482,9 +482,9 @@ namespace OmnicatLabs.CharacterControllers
             private float originalColHeight;
             private bool inCrouch = false;
 
-            public override void OnStateStart<T>(StatefulObject<T> self)
+            public override void OnStateInit<T>(StatefulObject<T> self)
             {
-                base.OnStateStart(self);
+                base.OnStateInit(self);
                 originalCamHeight = controller.mainCam.transform.position.y;
                 originalColHeight = controller.modelCollider.height;
             }
@@ -587,9 +587,9 @@ namespace OmnicatLabs.CharacterControllers
             private bool sliding = false;
             private float falloff;
             private Vector3 slideDir;
-            public override void OnStateStart<T>(StatefulObject<T> self)
+            public override void OnStateInit<T>(StatefulObject<T> self)
             {
-                base.OnStateStart(self);
+                base.OnStateInit(self);
                 originalHeight = controller.modelCollider.height;
                 originalCamPos = controller.mainCam.transform.position.y;
             }

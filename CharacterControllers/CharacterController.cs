@@ -128,10 +128,12 @@ namespace OmnicatLabs.CharacterControllers
         internal float groundAngle;
         internal bool isCrouching = false;
         internal bool slideKeyDown = false;
+        [HideInInspector]
+        public Rigidbody rb;
 
         private void Start()
         {
-
+            rb = GetComponent<Rigidbody>();
         }
 
         protected override void Update()
