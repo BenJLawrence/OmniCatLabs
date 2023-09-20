@@ -145,7 +145,7 @@
                 {
                     "name": "",
                     "id": "6e9b33da-e9a2-4515-810a-02a13940b995",
-                    "path": "<Keyboard>/leftAlt",
+                    "path": "<Keyboard>/leftCtrl",
                     "interactions": "",
                     "processors": "",
                     "groups": "FPS MNK Controls",

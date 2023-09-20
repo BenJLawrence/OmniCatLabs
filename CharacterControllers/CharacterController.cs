@@ -143,6 +143,7 @@ namespace OmnicatLabs.CharacterControllers
             SlopeCheck();
             WallCheck();
             //Debug.Log(state);
+            Debug.Log(state.ToString() + isCrouching.ToString());
         }
 
         protected override void FixedUpdate()
