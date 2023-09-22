@@ -59,6 +59,8 @@ namespace OmnicatLabs.CharacterControllers
         public UnityEvent onGrounded = new UnityEvent();
 
         [Header("In Air and Jumps")]
+        [Tooltip("Whether extra jumps should enabled by default. Useful for when this is an unlocked ability")]
+        public bool extraJumpUnlocked = false;
         [Tooltip("The amount of time the player can jump after having been grounded")]
         public float coyoteTime = .2f;
         public float coyoteModifier = 1.2f;
@@ -102,6 +104,7 @@ namespace OmnicatLabs.CharacterControllers
 
         [Header("Crouching/Sliding")]
         public float crouchHeight = 0.5f;
+        public float originalHeight = 1.5f;
         [Tooltip("The time in seconds it takes to go from standing to crouching")]
         public float toCrouchSpeed = .2f;
         [Tooltip("Toggle crouch on/off on button press instead of hold to crouch")]
@@ -112,6 +115,7 @@ namespace OmnicatLabs.CharacterControllers
         public float slideSpeedReduction = .999f;
         [Tooltip("The threshold that controls when a slide is forced to end. The higher the number, the quicker the slide will stop")]
         public float slideStopThreshold = 1.5f;
+        public float slideTransitionSpeed = .2f;
 
 
         internal Vector3 movementDir;
@@ -143,7 +147,8 @@ namespace OmnicatLabs.CharacterControllers
             SlopeCheck();
             WallCheck();
             //Debug.Log(state);
-            Debug.Log(state.ToString() + isCrouching.ToString());
+            //Debug.Log(state.ToString() + isCrouching.ToString());
+            //Debug.Log(isCrouching);
         }
 
         protected override void FixedUpdate()
@@ -281,6 +286,33 @@ namespace OmnicatLabs.CharacterControllers
 
                 }
             }
+        }
+        #endregion
+
+        #region Locks and Unlocks
+        /// <summary>
+        /// Unlocks extra jumps with the amount of jumps being set in the editor
+        /// </summary>
+        public void UnlockExtraJumps()
+        {
+            extraJumpUnlocked = true;
+        }
+        /// <summary>
+        /// Unlocks extra jumps with the amount passed in, bypassing the current amount in the editor
+        /// </summary>
+        /// <param name="amount">The new amount of jumps you want the player to have</param>
+        public void UnlockExtraJumps(int amount)
+        {
+            extraJumpUnlocked = true;
+            jumpAmount = amount;
+        }
+
+        /// <summary>
+        /// Locks extra jumps prevent the player from using them
+        /// </summary>
+        public void LockExtraJumps()
+        {
+            extraJumpUnlocked = false;
         }
         #endregion
 

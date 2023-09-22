@@ -97,14 +97,14 @@ namespace OmnicatLabs.CharacterControllers
                     controller.ChangeState(CharacterStates.Idle);
                 }
 
-                if (controller.isCrouching)
-                {
-                    controller.ChangeState(CharacterStates.Crouching);
-                }
-
-                if (controller.isCrouching && controller.sprinting)
+                if (controller.sprinting && controller.isCrouching)
                 {
                     controller.ChangeState(CharacterStates.Slide);
+                }
+
+                if (controller.isCrouching && !controller.sprinting)
+                {
+                    controller.ChangeState(CharacterStates.Crouching);
                 }
 
                 if (rb.velocity.magnitude >= 5)
@@ -273,7 +273,8 @@ namespace OmnicatLabs.CharacterControllers
 
             protected void DoAirJump()
             {
-                controller.ChangeState(CharacterStates.AirJump);
+                if (controller.extraJumpUnlocked)
+                    controller.ChangeState(CharacterStates.AirJump);
             }
 
             //Called when the player hits the ground
@@ -477,22 +478,22 @@ namespace OmnicatLabs.CharacterControllers
         {
             public CrouchState(AnimationTriggers _triggers) : base(_triggers) { }
 
-            private float originalCamHeight;
+            //private float originalCamHeight;
             private float originalColHeight;
             private bool inCrouch = false;
 
             public override void OnStateInit<T>(StatefulObject<T> self)
             {
                 base.OnStateInit(self);
+                //originalCamHeight = controller.mainCam.transform.position.y;
+                originalColHeight = controller.modelCollider.height;
             }
 
             public override void OnStateEnter<T>(StatefulObject<T> self)
             {
                 base.OnStateEnter(self);
-
                 triggers.TriggerAll(controller.animator, AnimationTriggers.TriggerFlag.Start);
-                originalCamHeight = controller.mainCam.transform.position.y;
-                originalColHeight = controller.modelCollider.height;
+                
             }
 
             public override void OnStateExit<T>(StatefulObject<T> self)
@@ -540,17 +541,17 @@ namespace OmnicatLabs.CharacterControllers
             {
                 if (!inCrouch && controller.isCrouching)
                 {
-                    controller.modelCollider.TweenHeight(controller.crouchHeight, controller.toCrouchSpeed, () => { }, EasingFunctions.Ease.EaseOutQuart);
-                    controller.mainCam.transform.TweenYPos(controller.crouchHeight, controller.toCrouchSpeed, null, EasingFunctions.Ease.EaseOutQuart);
+                    controller.modelCollider.TweenHeight(controller.crouchHeight, controller.toCrouchSpeed, () => { rb.AddForce(Vector3.down * 100f, ForceMode.Impulse); }, EasingFunctions.Ease.EaseOutQuart);
+                    controller.mainCam.transform.TweenYPos(controller.crouchHeight, controller.toCrouchSpeed, null, () => { rb.AddForce(Vector3.down * 500f * Time.deltaTime, ForceMode.Force); }, EasingFunctions.Ease.EaseOutQuart);
                     inCrouch = true;
-
+                    
 
                 }
 
                 if (inCrouch && !controller.isCrouching)
                 {
                     controller.modelCollider.TweenHeight(originalColHeight, controller.toCrouchSpeed, () => { }, EasingFunctions.Ease.EaseOutQuart);
-                    controller.mainCam.transform.TweenYPos(originalCamHeight, controller.toCrouchSpeed, null, EasingFunctions.Ease.EaseOutQuart);
+                    controller.mainCam.transform.TweenYPos(controller.originalHeight, controller.toCrouchSpeed, null, null, EasingFunctions.Ease.EaseOutQuart);
                     inCrouch = false;
                     controller.ChangeState(CharacterStates.Idle);
                 }
@@ -562,13 +563,16 @@ namespace OmnicatLabs.CharacterControllers
         public class SlideState : CharacterState
         {
             private float originalHeight;
-            private float originalCamPos;
+            //private float originalCamPos;
             private bool sliding = false;
             private float falloff;
             private Vector3 slideDir;
+            private bool shouldSlide = false;
             public override void OnStateInit<T>(StatefulObject<T> self)
             {
                 base.OnStateInit(self);
+                originalHeight = controller.modelCollider.height;
+                //originalCamPos = controller.mainCam.transform.position.y;
             }
 
             public override void OnStateEnter<T>(StatefulObject<T> self)
@@ -576,28 +580,27 @@ namespace OmnicatLabs.CharacterControllers
                 base.OnStateEnter(self);
                 falloff = controller.slideSpeed;
                 slideDir = controller.transform.forward;
-                originalHeight = controller.modelCollider.height;
-                originalCamPos = controller.mainCam.transform.position.y;
 
-                controller.modelCollider.TweenHeight(controller.crouchHeight, .2f, () => { }, EasingFunctions.Ease.EaseOutQuart);
-                controller.mainCam.transform.TweenYPos(controller.crouchHeight, .2f, () => { }, EasingFunctions.Ease.EaseOutQuart);
+                controller.modelCollider.TweenHeight(controller.crouchHeight, controller.slideTransitionSpeed, () => { }, EasingFunctions.Ease.EaseOutQuart);
+                controller.mainCam.transform.TweenYPos(controller.crouchHeight, controller.slideTransitionSpeed, () => { }, () => { rb.AddForce(Vector3.down * 500f * Time.deltaTime, ForceMode.Force); }, EasingFunctions.Ease.EaseOutQuart);
                 //controller.mainCam.transform.TweenPosition(new Vector3(controller.mainCam.transform.position.x, controller.crouchHeight, controller.mainCam.transform.position.z), controller.toCrouchSpeed, () => { }, EasingFunctions.Ease.EaseOutQuart);
             }
 
             public override void OnStateExit<T>(StatefulObject<T> self)
             {
                 //Debug.Log("Called");
-                controller.modelCollider.TweenHeight(originalHeight, .2f, () => { }, EasingFunctions.Ease.EaseOutQuart);
-                controller.mainCam.transform.TweenYPos(originalCamPos, .2f, () => { }, EasingFunctions.Ease.EaseOutQuart);
-                controller.isCrouching = false;
-                controller.slideKeyDown = false;
+                controller.modelCollider.TweenHeight(originalHeight, controller.slideTransitionSpeed, () => { }, EasingFunctions.Ease.EaseOutQuart);
+                controller.mainCam.transform.TweenYPos(controller.originalHeight, controller.slideTransitionSpeed, () => { }, null, EasingFunctions.Ease.EaseOutQuart);
+                //controller.isCrouching = false;
+                //controller.slideKeyDown = false;
                 //controller.mainCam.transform.TweenPosition(new Vector3(controller.mainCam.transform.position.x, originalCamPos, controller.mainCam.transform.position.z), controller.toCrouchSpeed, () => Debug.Log("Completed"), EasingFunctions.Ease.EaseOutQuart);
             }
 
             public override void OnStateFixedUpdate<T>(StatefulObject<T> self)
             {
-                if (controller.slideKeyDown && falloff > controller.slideStopThreshold)
+                if (shouldSlide)
                 {
+                    Debug.Log("Sliding");
                     sliding = true;
                     rb.AddForce(slideDir * controller.slideSpeed * falloff * Time.deltaTime);
                     falloff *= controller.slideSpeedReduction;
@@ -611,10 +614,13 @@ namespace OmnicatLabs.CharacterControllers
 
             public override void OnStateUpdate<T>(StatefulObject<T> self)
             {
-                if (sliding == false)
+                shouldSlide = controller.slideKeyDown && falloff > controller.slideStopThreshold;
+                
+
+                if (sliding == false && !shouldSlide)
                 {
                     controller.movementDir = lastMovementDir;
-                    controller.ChangeState(CharacterStates.Moving);
+                    controller.ChangeState(CharacterStates.Idle);
                 }
                 if (rb.velocity.magnitude > 5)
                 {

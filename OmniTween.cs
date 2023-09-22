@@ -10,7 +10,7 @@ namespace OmnicatLabs.Tween
     {
         public static void FadeIn(this CanvasGroup cg, float amountOfTime, UnityAction onComplete = null, EasingFunctions.Ease easing = EasingFunctions.Ease.Linear)
         {
-            OmniTween.tweens.Add(new Tween(amountOfTime, onComplete, (tween) =>
+            OmniTween.tweens.Add(new Tween(amountOfTime, onComplete, cg, (tween) =>
             {
                 if (tween.timeElapsed < tween.tweenTime)
                 {
@@ -27,7 +27,7 @@ namespace OmnicatLabs.Tween
 
         public static void FadeOut(this CanvasGroup cg, float amountOfTime, UnityAction onComplete = null, EasingFunctions.Ease easing = EasingFunctions.Ease.Linear)
         {
-            OmniTween.tweens.Add(new Tween(amountOfTime, onComplete, (tween) =>
+            OmniTween.tweens.Add(new Tween(amountOfTime, onComplete, cg, (tween) =>
             {
                 if (tween.timeElapsed < tween.tweenTime)
                 {
@@ -42,15 +42,25 @@ namespace OmnicatLabs.Tween
             }));
         }
 
-        public static void TweenYPos(this Transform transform, float newY, float amountOfTime, UnityAction onComplete = null, EasingFunctions.Ease easing = EasingFunctions.Ease.Linear)
+        public static void TweenYPos(this Transform transform, float newY, float amountOfTime, UnityAction onComplete = null, UnityAction onTick = null, EasingFunctions.Ease easing = EasingFunctions.Ease.Linear)
         {
             float startingY = transform.position.y;
-            OmniTween.tweens.Add(new Tween(amountOfTime, onComplete, (tween) =>
+            //Tween tween = OmniTween.tweens.Find(tween => tween.component == transform);
+            //if (tween != null && tween.component == transform)
+            //{
+            //    tween.completed = true;
+            //    Debug.Log(tween);
+            //}
+
+
+            OmniTween.tweens.Add(new Tween(amountOfTime, onComplete, transform, (tween) =>
             {
-                if (tween.timeElapsed < tween.tweenTime)
+                if (tween.timeElapsed < tween.tweenTime && !tween.completed)
                 {
+                    if (onTick != null)
+                        onTick.Invoke();
+
                     transform.position = new Vector3(transform.position.x, EasingFunctions.GetEasingFunction(easing).Invoke(startingY, newY, tween.timeElapsed / tween.tweenTime), transform.position.z);
-                    //transform.position = Vector3.Lerp(startingPos, newPosition, tween.timeElapsed / tween.tweenTime);
                     tween.timeElapsed += Time.deltaTime;
                 }
                 else
@@ -68,7 +78,7 @@ namespace OmnicatLabs.Tween
             float y = transform.position.y;
             float z = transform.position.z;
 
-            OmniTween.tweens.Add(new Tween(amountOfTime, onComplete, (tween) =>
+            OmniTween.tweens.Add(new Tween(amountOfTime, onComplete, transform, (tween) =>
             {
                 if (tween.timeElapsed < tween.tweenTime)
                 {
@@ -101,7 +111,7 @@ namespace OmnicatLabs.Tween
         public static void TweenHeight(this CapsuleCollider col, float newHeight, float amountOfTime, UnityAction onComplete, EasingFunctions.Ease easing = EasingFunctions.Ease.Linear)
         {
             float startingHeight = col.height;
-            OmniTween.tweens.Add(new Tween(amountOfTime, onComplete, (tween) =>
+            OmniTween.tweens.Add(new Tween(amountOfTime, onComplete, col, (tween) =>
             {
                 if (tween.timeElapsed < tween.tweenTime)
                 {
@@ -120,6 +130,7 @@ namespace OmnicatLabs.Tween
 
     public class Tween
     {
+        public Component component;
         public float tweenTime;
         public float timeElapsed = 0f;
         public UnityAction<Tween> tweenAction;
@@ -130,42 +141,43 @@ namespace OmnicatLabs.Tween
             tweenAction.Invoke(this);
         }
 
-        public Tween(float _tweenTime, UnityAction _onComplete, UnityAction<Tween> _tweenAction)
+        public Tween(float _tweenTime, UnityAction _onComplete, Component _component, UnityAction<Tween> _tweenAction)
         {
+            component = _component;
             tweenTime = _tweenTime;
             tweenAction = _tweenAction;
             onComplete = _onComplete;
         }
     }
 
-    public class ValueTween : Tween
-    {
-        private EasingFunctions.Ease easing;
-        private float value;
-        private float initialValue;
-        private float finalValue;
-        public override void DoTween()
-        {
-            if (timeElapsed < tweenTime)
-            {
-                value = EasingFunctions.GetEasingFunction(easing).Invoke(initialValue, finalValue, timeElapsed / tweenTime);
-                timeElapsed += Time.deltaTime;
-            }
-            else
-            {
-                value = finalValue;
-                completed = true;
-            }
-        }
+    //public class ValueTween : Tween
+    //{
+    //    private EasingFunctions.Ease easing;
+    //    private float value;
+    //    private float initialValue;
+    //    private float finalValue;
+    //    public override void DoTween()
+    //    {
+    //        if (timeElapsed < tweenTime)
+    //        {
+    //            value = EasingFunctions.GetEasingFunction(easing).Invoke(initialValue, finalValue, timeElapsed / tweenTime);
+    //            timeElapsed += Time.deltaTime;
+    //        }
+    //        else
+    //        {
+    //            value = finalValue;
+    //            completed = true;
+    //        }
+    //    }
 
-        public ValueTween(ref float _value, float _finalValue, float _tweenTime, UnityAction _onComplete, EasingFunctions.Ease _easing) : base(_tweenTime, _onComplete, (tween) => { }) 
-        {
-            initialValue = _value;
-            value = _value;
-            finalValue = _finalValue;
-            easing = _easing;
-        }
-    }
+    //    public ValueTween(ref float _value, float _finalValue, float _tweenTime, UnityAction _onComplete, EasingFunctions.Ease _easing) : base(_tweenTime, _onComplete, (tween) => { }) 
+    //    {
+    //        initialValue = _value;
+    //        value = _value;
+    //        finalValue = _finalValue;
+    //        easing = _easing;
+    //    }
+    //}
 
     public class OmniTween : MonoBehaviour
     {
@@ -190,7 +202,7 @@ namespace OmnicatLabs.Tween
             //        tween.completed = true;
             //    }
             //}));
-            tweens.Add(new ValueTween(ref valueToChange, finalValue, amountOfTime, onComplete, easing));
+            //tweens.Add(new ValueTween(ref valueToChange, finalValue, amountOfTime, onComplete, easing));
         }
 
         private void Update()
