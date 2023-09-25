@@ -269,6 +269,11 @@ namespace OmnicatLabs.CharacterControllers
                 {
                     controller.ChangeState(CharacterStates.Idle);
                 }
+
+                if ((controller.wallLeft || controller.wallRight) && controller.movementDir == Vector3.forward && !controller.isGrounded)
+                {
+                    controller.ChangeState(CharacterStates.WallRun);
+                }
             }
 
             protected void DoAirJump()
@@ -625,6 +630,52 @@ namespace OmnicatLabs.CharacterControllers
                 if (rb.velocity.magnitude > 5)
                 {
                     rb.velocity = rb.velocity.normalized * 5;
+                }
+            }
+        }
+
+        public class WallRunState : CharacterState
+        {
+            private Vector3 wallNormal;
+            private Vector3 wallForward;
+
+            public override void OnStateInit<T>(StatefulObject<T> self)
+            {
+                base.OnStateInit(self);
+            }
+
+            public override void OnStateEnter<T>(StatefulObject<T> self)
+            {
+                base.OnStateEnter(self);
+                wallNormal = controller.wallRight ? controller.rightWallHit.normal : controller.leftWallHit.normal;
+                wallForward = -Vector3.Cross(wallNormal, controller.transform.up);
+                rb.useGravity = false;
+                rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
+                controller.wallRunning = true;
+            }
+
+            public override void OnStateExit<T>(StatefulObject<T> self)
+            {
+                //rb.useGravity = true;
+                controller.wallRunning = false;
+                Debug.Log("Exited");
+            }
+
+            public override void OnStateFixedUpdate<T>(StatefulObject<T> self)
+            {
+                rb.AddForce(wallForward * controller.wallRunSpeed, ForceMode.Force);
+            }
+
+            public override void OnStateUpdate<T>(StatefulObject<T> self)
+            {
+                if (!controller.wallLeft || !controller.wallRight)
+                {
+                    controller.ChangeState(CharacterStates.Falling);
+                }
+
+                if (rb.velocity.magnitude > 5f)
+                {
+                    rb.velocity = rb.velocity.normalized * 5f;
                 }
             }
         }

@@ -20,6 +20,7 @@ namespace OmnicatLabs.CharacterControllers
         public static readonly State<CharacterState> Crouching = new CharacterStateLibrary.CrouchState(crouchTriggers);
         public static readonly State<CharacterState> CrouchWalk = new CharacterStateLibrary.CrouchWalkState(crouchTriggers);
         public static readonly State<CharacterState> Slide = new CharacterStateLibrary.SlideState();
+        public static readonly State<CharacterState> WallRun = new CharacterStateLibrary.WallRunState();
     }
 
     /// <summary>
@@ -117,6 +118,12 @@ namespace OmnicatLabs.CharacterControllers
         public float slideStopThreshold = 1.5f;
         public float slideTransitionSpeed = .2f;
 
+        [Header("Wall Running")]
+        public bool wallRunningUnlocked;
+        public LayerMask runnableLayers;
+        public float wallRunSpeed = 500f;
+        public float maxWallRunTime = 3f;
+
 
         internal Vector3 movementDir;
         internal bool isGrounded = true;
@@ -134,6 +141,11 @@ namespace OmnicatLabs.CharacterControllers
         internal bool slideKeyDown = false;
         [HideInInspector]
         public Rigidbody rb;
+        internal RaycastHit leftWallHit;
+        internal RaycastHit rightWallHit;
+        internal bool wallLeft;
+        internal bool wallRight;
+        internal bool wallRunning = false;
 
         private void Start()
         {
@@ -145,8 +157,9 @@ namespace OmnicatLabs.CharacterControllers
             base.Update();
             GroundCheck();
             SlopeCheck();
-            WallCheck();
-            //Debug.Log(state);
+            //WallCheck();
+            WallRunCheck();
+            Debug.Log(state);
             //Debug.Log(state.ToString() + isCrouching.ToString());
             //Debug.Log(isCrouching);
         }
@@ -154,6 +167,12 @@ namespace OmnicatLabs.CharacterControllers
         protected override void FixedUpdate()
         {
             base.FixedUpdate();
+        }
+
+        private void WallRunCheck()
+        {
+            wallRight = Physics.Raycast(transform.position, transform.right, out rightWallHit, wallCheckDistance, runnableLayers);
+            wallLeft = Physics.Raycast(transform.position, -transform.right, out leftWallHit, wallCheckDistance, runnableLayers);
         }
 
         private void WallCheck()
@@ -207,7 +226,7 @@ namespace OmnicatLabs.CharacterControllers
                 currentJumpAmount = 0;
             }
 
-            if (!isGrounded && !onSlope)
+            if (!isGrounded && !onSlope && !wallRunning)
             {
                 ChangeState(CharacterStates.Falling);
             }
