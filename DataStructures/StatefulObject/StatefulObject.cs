@@ -206,18 +206,18 @@ namespace OmnicatLabs.StatefulObject
 
     public class StatefulObject<T> : MonoBehaviour where T : IState
     {
-        public static StatefulObject<T> Instance;
-
         protected State<T> state;
 
         internal Animator animator;
+        private bool isPaused = false;
 
-        private void Awake()
+        protected void SetPause(bool value)
         {
-            if (Instance == null)
-            {
-                Instance = this;
-            }
+            isPaused = value;
+        }
+
+        protected virtual void Awake()
+        {
             //Getting the fields of the type that inherits from us.
             //Because each generic definition of a State is treated as a different type, there should only be one class that inherits from the State hence index 0
             var fieldList = Assembly.GetAssembly(typeof(State<T>)).GetTypes()
@@ -261,12 +261,14 @@ namespace OmnicatLabs.StatefulObject
 
         protected virtual void Update()
         {
-            state.data.OnStateUpdate(this);
+            if (!isPaused)
+                state.data.OnStateUpdate(this);
         }
 
         protected virtual void FixedUpdate()
         {
-            state.data.OnStateFixedUpdate(this);
+            if (!isPaused)
+                state.data.OnStateFixedUpdate(this);
         }
 
         public void ChangeState(State<T> newState)

@@ -36,6 +36,8 @@ namespace OmnicatLabs.CharacterControllers
 
     public class CharacterController : StatefulObject<CharacterState>
     {
+        public static CharacterController Instance;
+
         public Camera mainCam;
         public CapsuleCollider modelCollider;
 
@@ -146,6 +148,15 @@ namespace OmnicatLabs.CharacterControllers
         internal bool wallLeft;
         internal bool wallRight;
         internal bool wallRunning = false;
+
+        protected override void Awake()
+        {
+            base.Awake();
+            if (Instance == null)
+            {
+                Instance = this;
+            }
+        }
 
         private void Start()
         {
@@ -309,6 +320,45 @@ namespace OmnicatLabs.CharacterControllers
         #endregion
 
         #region Locks and Unlocks
+        public void SetControllerLocked(bool value, bool hidePlayer, bool unlockCursor)
+        {
+            SetPause(value);
+            mainCam.GetComponent<MouseLook>().enabled = !value;
+
+            if (hidePlayer)
+            {
+                foreach (Transform child in mainCam.GetComponentsInChildren<Transform>())
+                {
+                    if (child.gameObject.layer == LayerMask.NameToLayer("Weapon"))
+                    {
+                        child.gameObject.SetActive(false);
+                    }
+                }
+            }
+            else
+            {
+                foreach (Transform child in mainCam.GetComponentsInChildren<Transform>(true))
+                {
+                    if (child.gameObject.layer == LayerMask.NameToLayer("Weapon"))
+                    {
+                        child.gameObject.SetActive(true);
+                    }
+                }
+            }
+
+            if (unlockCursor)
+            {
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+            }
+            else
+            {
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible = Cursor.visible = false;
+            }
+        }
+
+
         /// <summary>
         /// Unlocks extra jumps with the amount of jumps being set in the editor
         /// </summary>

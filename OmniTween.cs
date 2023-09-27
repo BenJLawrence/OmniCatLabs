@@ -3,11 +3,40 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using TMPro;
 
 namespace OmnicatLabs.Tween
 {
     public static class TransformExtensions
     {
+        public static void TweenYRot(this Transform transform, float speed, float amountOfTime, UnityAction onComplete = null, UnityAction onTick = null, EasingFunctions.Ease easing = EasingFunctions.Ease.Linear)
+        {
+            Transform starting = transform;
+            //Tween tween = OmniTween.tweens.Find(tween => tween.component == transform);
+            //if (tween != null && tween.component == transform)
+            //{
+            //    tween.completed = true;
+            //    Debug.Log(tween);
+            //}
+
+            OmniTween.tweens.Add(new Tween(amountOfTime, onComplete, transform, (tween) =>
+            {
+                if (tween.timeElapsed < tween.tweenTime && !tween.completed)
+                {
+                    if (onTick != null)
+                        onTick.Invoke();
+                    transform.Rotate(speed * Vector3.up * Time.deltaTime);
+                    //transform.position = new Vector3(transform.position.x, EasingFunctions.GetEasingFunction(easing).Invoke(startingY, newY, tween.timeElapsed / tween.tweenTime), transform.position.z);
+                    tween.timeElapsed += Time.deltaTime;
+                }
+                else
+                {
+                    //transform.position = new Vector3(transform.position.x, newY, transform.position.z);
+                    tween.completed = true;
+                }
+            }));
+        }
+
         public static void FadeIn(this CanvasGroup cg, float amountOfTime, UnityAction onComplete = null, EasingFunctions.Ease easing = EasingFunctions.Ease.Linear)
         {
             OmniTween.tweens.Add(new Tween(amountOfTime, onComplete, cg, (tween) =>
