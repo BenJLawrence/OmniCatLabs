@@ -73,7 +73,7 @@ namespace OmnicatLabs.Tween
 
         public static void TweenYPos(this Transform transform, float newY, float amountOfTime, UnityAction onComplete = null, UnityAction onTick = null, EasingFunctions.Ease easing = EasingFunctions.Ease.Linear)
         {
-            float startingY = transform.position.y;
+            float startingY = transform.localPosition.y;
             //Tween tween = OmniTween.tweens.Find(tween => tween.component == transform);
             //if (tween != null && tween.component == transform)
             //{
@@ -89,12 +89,12 @@ namespace OmnicatLabs.Tween
                     if (onTick != null)
                         onTick.Invoke();
 
-                    transform.position = new Vector3(transform.position.x, EasingFunctions.GetEasingFunction(easing).Invoke(startingY, newY, tween.timeElapsed / tween.tweenTime), transform.position.z);
+                    transform.localPosition = new Vector3(transform.localPosition.x, EasingFunctions.GetEasingFunction(easing).Invoke(startingY, newY, tween.timeElapsed / tween.tweenTime), transform.localPosition.z);
                     tween.timeElapsed += Time.deltaTime;
                 }
                 else
                 {
-                    transform.position = new Vector3(transform.position.x, newY, transform.position.z);
+                    transform.localPosition = new Vector3(transform.localPosition.x, newY, transform.localPosition.z);
                     tween.completed = true;
                 }
             }));
