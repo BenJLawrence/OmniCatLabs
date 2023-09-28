@@ -28,6 +28,7 @@ namespace OmnicatLabs.CharacterControllers
     /// </summary>
     public enum GroundCheckType
     {
+        Box,
         Sphere,
         Raycast,
         Both,
@@ -56,6 +57,7 @@ namespace OmnicatLabs.CharacterControllers
         [Header("Ground Checks")]
         public GroundCheckType groundCheckType;
         public Transform groundPoint;
+        public Vector3 boxBounds = Vector3.one;
         public float checkRadius = 1f;
         public float checkDistance = 1f;
         public LayerMask groundLayer;
@@ -148,6 +150,8 @@ namespace OmnicatLabs.CharacterControllers
         internal bool wallLeft;
         internal bool wallRight;
         internal bool wallRunning = false;
+        internal Vector3 fixedGroundPoint;
+        internal bool isLocked = false;
 
         protected override void Awake()
         {
@@ -161,6 +165,7 @@ namespace OmnicatLabs.CharacterControllers
         private void Start()
         {
             rb = GetComponent<Rigidbody>();
+            fixedGroundPoint = groundPoint.localPosition;
         }
 
         protected override void Update()
@@ -214,6 +219,10 @@ namespace OmnicatLabs.CharacterControllers
         {
             switch (groundCheckType)
             {
+                case GroundCheckType.Box:
+                    isGrounded = Physics.CheckBox(groundPoint.position, boxBounds / 2f, Quaternion.identity, groundLayer);
+                    if (groundHit.transform != null) Debug.Log(groundHit.transform.name);
+                    break;
                 case GroundCheckType.Raycast:
                     isGrounded = Physics.Raycast(groundPoint.position, Vector3.down, out groundHit, checkDistance, groundLayer);
                     break;
@@ -273,7 +282,7 @@ namespace OmnicatLabs.CharacterControllers
                 onAirJump.Invoke();
             }
 
-            if (context.performed && isGrounded)
+            if (context.performed && isGrounded && !isLocked)
             {
                 jumpKeyDown = true;
                 ChangeState(CharacterStates.Jumping);
@@ -323,6 +332,7 @@ namespace OmnicatLabs.CharacterControllers
         public void SetControllerLocked(bool value, bool hidePlayer, bool unlockCursor)
         {
             SetPause(value);
+            isLocked = value;
             mainCam.GetComponent<MouseLook>().enabled = !value;
 
             if (hidePlayer)
@@ -392,6 +402,9 @@ namespace OmnicatLabs.CharacterControllers
                 Gizmos.color = Color.green;
                 switch (groundCheckType)
                 {
+                    case GroundCheckType.Box:
+                        Gizmos.DrawWireCube(groundPoint.position, boxBounds);
+                        break;
                     case GroundCheckType.Raycast:
                         Gizmos.DrawRay(groundPoint.position, Vector3.down * checkDistance);
                         break;
