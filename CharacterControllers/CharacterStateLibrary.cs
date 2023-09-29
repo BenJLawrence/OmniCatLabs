@@ -338,7 +338,7 @@ namespace OmnicatLabs.CharacterControllers
                 airTime = 0f;
 
                 rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
-                rb.AddForce((Vector3.up + rb.velocity.normalized) * controller.baseJumpForce , ForceMode.Impulse);
+                rb.AddForce((Vector3.up) * controller.baseJumpForce , ForceMode.Impulse);
             }
 
             public override void OnStateExit<T>(StatefulObject<T> self)
