@@ -237,7 +237,7 @@ namespace OmnicatLabs.StatefulObject
 
             if (!GetComponentInChildren<Animator>() || !GetComponentInChildren<Animator>().runtimeAnimatorController)
             {
-                Debug.LogError("State Animations were used when there is no Animator Component on the same or children object(s) as the StatefulObject. Ensure that you have added an Animator Component and it has a valid controller assigned.");
+                //Debug.LogError("State Animations were used when there is no Animator Component on the same or children object(s) as the StatefulObject. Ensure that you have added an Animator Component and it has a valid controller assigned.");
             }
             else
             {

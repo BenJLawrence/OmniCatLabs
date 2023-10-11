@@ -509,7 +509,7 @@ namespace OmnicatLabs.CharacterControllers
             public override void OnStateEnter<T>(StatefulObject<T> self)
             {
                 base.OnStateEnter(self);
-                triggers.TriggerAll(controller.animator, AnimationTriggers.TriggerFlag.Start);
+                //triggers.TriggerAll(controller.animator, AnimationTriggers.TriggerFlag.Start);
                 
             }
 

@@ -153,6 +153,8 @@ namespace OmnicatLabs.CharacterControllers
         internal bool wallRunning = false;
         internal Vector3 fixedGroundPoint;
         internal bool isLocked = false;
+        [HideInInspector]
+        public bool playerIsHidden = false;
 
         protected override void Awake()
         {
@@ -345,6 +347,7 @@ namespace OmnicatLabs.CharacterControllers
                         child.gameObject.SetActive(false);
                     }
                 }
+                playerIsHidden = true;
             }
             else
             {
@@ -355,6 +358,8 @@ namespace OmnicatLabs.CharacterControllers
                         child.gameObject.SetActive(true);
                     }
                 }
+
+                playerIsHidden = false;
             }
 
             if (unlockCursor)
