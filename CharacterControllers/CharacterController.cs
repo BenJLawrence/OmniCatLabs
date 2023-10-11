@@ -106,6 +106,7 @@ namespace OmnicatLabs.CharacterControllers
             "If disabled the character will have to fight against the natural physics that govern slopes. " +
             "useGravity and this setting function independently.")]
         public bool maintainVelocity = true;
+        public float slopeSpeed = 130f;
 
         [Header("Crouching/Sliding")]
         public float crouchHeight = 0.5f;

@@ -55,6 +55,17 @@ namespace OmnicatLabs.CharacterControllers
 
             public override void OnStateFixedUpdate<T>(StatefulObject<T> self)
             {
+                //TODO correct logic for whether on an up or down slope just need to integrate
+                //var result = Vector3.Dot(controller.slopeHit.normal, controller.transform.forward);
+                //if (result < 0f)
+                //{
+                //    Debug.Log((result, "Upslope"));
+                //}
+                //else if (result > 0f)
+                //{
+                //    Debug.Log((result, "Downslope"));
+                //}
+
                 float targetSpeed = controller.sprinting ? controller.moveSpeed * controller.sprintMultiplier : controller.moveSpeed;
                 //Debug.Log(targetSpeed);
                 if (!controller.onSlope && controller.groundAngle == 0)
@@ -63,6 +74,7 @@ namespace OmnicatLabs.CharacterControllers
                 }
                 else if (controller.onSlope)
                 {
+                    targetSpeed = controller.sprinting ? controller.slopeSpeed * controller.sprintMultiplier : controller.slopeSpeed;
                     //rb.velocity = GetSlopeMoveDir() * targetSpeed * Time.deltaTime;
 
                     if (controller.maintainVelocity)
@@ -97,7 +109,7 @@ namespace OmnicatLabs.CharacterControllers
                     controller.ChangeState(CharacterStates.Idle);
                 }
 
-                if (controller.sprinting && controller.isCrouching)
+                if (controller.sprinting && controller.isCrouching && !controller.onSlope)
                 {
                     controller.ChangeState(CharacterStates.Slide);
                 }
@@ -338,7 +350,7 @@ namespace OmnicatLabs.CharacterControllers
                 airTime = 0f;
 
                 rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
-                rb.AddForce((Vector3.up) * controller.baseJumpForce , ForceMode.Impulse);
+                rb.AddForce((Vector3.up + rb.velocity.normalized) * controller.baseJumpForce , ForceMode.Impulse);
             }
 
             public override void OnStateExit<T>(StatefulObject<T> self)
@@ -520,7 +532,7 @@ namespace OmnicatLabs.CharacterControllers
 
             public override void OnStateFixedUpdate<T>(StatefulObject<T> self)
             {
-                float targetSpeed = controller.moveSpeed * controller.crouchSpeedModifier;
+                float targetSpeed = controller.slopeSpeed * controller.crouchSpeedModifier;
                 if (!controller.onSlope && controller.groundAngle == 0)
                 {
                     rb.AddRelativeForce(controller.movementDir * targetSpeed * Time.deltaTime, ForceMode.Impulse);
@@ -619,7 +631,7 @@ namespace OmnicatLabs.CharacterControllers
 
             public override void OnStateUpdate<T>(StatefulObject<T> self)
             {
-                shouldSlide = controller.slideKeyDown && falloff > controller.slideStopThreshold;
+                shouldSlide = controller.slideKeyDown && falloff > controller.slideStopThreshold && !controller.onSlope;
                 
 
                 if (sliding == false && !shouldSlide)
