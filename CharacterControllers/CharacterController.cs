@@ -96,6 +96,7 @@ namespace OmnicatLabs.CharacterControllers
         public float slopeCheckDistance = 1f;
         [Tooltip("If the angle of the slope is higher than this the player will simply slide off")]
         public float maxSlopeAngle = 60f;
+        public float minSlopeAngle = 10f;
         [Tooltip("Only things included in this mask will elegible for detection")]
         public LayerMask slopeCheckFilter;
         [Tooltip("A position from which the controller will check for slopes. Ideally position this close to front of the character or else there can be jitters when entering a slope")]
@@ -109,6 +110,7 @@ namespace OmnicatLabs.CharacterControllers
         public float slopeSpeed = 130f;
 
         [Header("Crouching/Sliding")]
+        public LayerMask testMask;
         public float crouchHeight = 0.5f;
         public float originalHeight = 1.5f;
         [Tooltip("The time in seconds it takes to go from standing to crouching")]
@@ -181,6 +183,7 @@ namespace OmnicatLabs.CharacterControllers
             Debug.Log(state);
             //Debug.Log(state.ToString() + isCrouching.ToString());
             //Debug.Log(isCrouching);
+            Debug.Log(onSlope);
         }
 
         protected override void FixedUpdate()
@@ -208,14 +211,14 @@ namespace OmnicatLabs.CharacterControllers
             if (Physics.Raycast(slopeCheckPoint.position, Vector3.down, out slopeHit, slopeCheckDistance, slopeCheckFilter))
             {
                 groundAngle = Vector3.Angle(Vector3.up, slopeHit.normal);
-                onSlope = groundAngle < maxSlopeAngle && groundAngle != 0;
+                onSlope = groundAngle < maxSlopeAngle && groundAngle != 0 && groundAngle > minSlopeAngle;
             }
             else onSlope = false;
 
-            if (!useGravity)
-            {
-                GetComponent<Rigidbody>().useGravity = !onSlope;
-            }
+            //if (!useGravity)
+            //{
+            //    GetComponent<Rigidbody>().useGravity = !onSlope;
+            //}
         }
 
         private void GroundCheck()

@@ -68,7 +68,7 @@ namespace OmnicatLabs.CharacterControllers
 
                 float targetSpeed = controller.sprinting ? controller.moveSpeed * controller.sprintMultiplier : controller.moveSpeed;
                 //Debug.Log(targetSpeed);
-                if (!controller.onSlope && controller.groundAngle == 0)
+                if (!controller.onSlope)
                 {
                     rb.AddRelativeForce(controller.movementDir * targetSpeed * Time.deltaTime, ForceMode.Impulse);
                 }
@@ -499,6 +499,13 @@ namespace OmnicatLabs.CharacterControllers
             private float originalColHeight;
             private bool inCrouch = false;
 
+            public bool CanStand()
+            {
+                Vector3 startPos = controller.transform.position + controller.modelCollider.center;
+                Debug.DrawRay(startPos, Vector3.up * originalColHeight, Color.green, 99f);
+                return !Physics.Raycast(startPos, Vector3.up, originalColHeight, ~LayerMask.NameToLayer("Player"));
+            }
+
             public override void OnStateInit<T>(StatefulObject<T> self)
             {
                 base.OnStateInit(self);
@@ -511,11 +518,15 @@ namespace OmnicatLabs.CharacterControllers
                 base.OnStateEnter(self);
                 //triggers.TriggerAll(controller.animator, AnimationTriggers.TriggerFlag.Start);
                 
+                //if (!CanStand())
+                //{
+                //    inCrouch = true;
+                //}
             }
 
             public override void OnStateExit<T>(StatefulObject<T> self)
             {
-
+                inCrouch = false;
             }
 
             private Vector3 GetSlopeMoveDir()
@@ -533,7 +544,7 @@ namespace OmnicatLabs.CharacterControllers
             public override void OnStateFixedUpdate<T>(StatefulObject<T> self)
             {
                 float targetSpeed = controller.slopeSpeed * controller.crouchSpeedModifier;
-                if (!controller.onSlope && controller.groundAngle == 0)
+                if (!controller.onSlope)
                 {
                     rb.AddRelativeForce(controller.movementDir * targetSpeed * Time.deltaTime, ForceMode.Impulse);
                 }
@@ -561,16 +572,17 @@ namespace OmnicatLabs.CharacterControllers
                     controller.modelCollider.TweenHeight(controller.crouchHeight, controller.toCrouchSpeed, () => { rb.AddForce(Vector3.down * 100f, ForceMode.Impulse); }, EasingFunctions.Ease.EaseOutQuart);
                     controller.mainCam.transform.TweenYPos(controller.crouchHeight, controller.toCrouchSpeed, null, () => { rb.AddForce(Vector3.down * 500f * Time.deltaTime, ForceMode.Force); }, EasingFunctions.Ease.EaseOutQuart);
                     inCrouch = true;
-                    
-
                 }
 
                 if (inCrouch && !controller.isCrouching)
                 {
-                    controller.modelCollider.TweenHeight(originalColHeight, controller.toCrouchSpeed, () => { }, EasingFunctions.Ease.EaseOutQuart);
-                    controller.mainCam.transform.TweenYPos(controller.originalHeight, controller.toCrouchSpeed, null, null, EasingFunctions.Ease.EaseOutQuart);
-                    inCrouch = false;
-                    controller.ChangeState(CharacterStates.Idle);
+                    if (CanStand())
+                    {
+                        controller.modelCollider.TweenHeight(originalColHeight, controller.toCrouchSpeed, () => { }, EasingFunctions.Ease.EaseOutQuart);
+                        controller.mainCam.transform.TweenYPos(controller.originalHeight, controller.toCrouchSpeed, null, null, EasingFunctions.Ease.EaseOutQuart);
+                        inCrouch = false;
+                        controller.ChangeState(CharacterStates.Idle);
+                    }
                 }
 
                 rb.velocity = new Vector3(0f, rb.velocity.y, 0f);
@@ -585,6 +597,15 @@ namespace OmnicatLabs.CharacterControllers
             private float falloff;
             private Vector3 slideDir;
             private bool shouldSlide = false;
+            private bool goingToCrouch = false;
+
+            public bool CanStand()
+            {
+                Vector3 startPos = controller.transform.position + controller.modelCollider.center;
+                Debug.DrawRay(startPos, Vector3.up * originalHeight, Color.green, 99f);
+                return !Physics.Raycast(startPos, Vector3.up, originalHeight, ~LayerMask.NameToLayer("Player"));
+            }
+
             public override void OnStateInit<T>(StatefulObject<T> self)
             {
                 base.OnStateInit(self);
@@ -606,8 +627,12 @@ namespace OmnicatLabs.CharacterControllers
             public override void OnStateExit<T>(StatefulObject<T> self)
             {
                 //Debug.Log("Called");
-                controller.modelCollider.TweenHeight(originalHeight, controller.slideTransitionSpeed, () => { }, EasingFunctions.Ease.EaseOutQuart);
-                controller.mainCam.transform.TweenYPos(controller.originalHeight, controller.slideTransitionSpeed, () => { }, null, EasingFunctions.Ease.EaseOutQuart);
+                if (!goingToCrouch)
+                {
+                    controller.modelCollider.TweenHeight(originalHeight, controller.slideTransitionSpeed, () => { }, EasingFunctions.Ease.EaseOutQuart);
+                    controller.mainCam.transform.TweenYPos(controller.originalHeight, controller.slideTransitionSpeed, () => { }, null, EasingFunctions.Ease.EaseOutQuart);
+                }
+
                 //controller.isCrouching = false;
                 //controller.slideKeyDown = false;
                 //controller.mainCam.transform.TweenPosition(new Vector3(controller.mainCam.transform.position.x, originalCamPos, controller.mainCam.transform.position.z), controller.toCrouchSpeed, () => Debug.Log("Completed"), EasingFunctions.Ease.EaseOutQuart);
@@ -617,7 +642,6 @@ namespace OmnicatLabs.CharacterControllers
             {
                 if (shouldSlide)
                 {
-                    Debug.Log("Sliding");
                     sliding = true;
                     rb.AddForce(slideDir * controller.slideSpeed * falloff * Time.deltaTime);
                     falloff *= controller.slideSpeedReduction;
@@ -632,12 +656,23 @@ namespace OmnicatLabs.CharacterControllers
             public override void OnStateUpdate<T>(StatefulObject<T> self)
             {
                 shouldSlide = controller.slideKeyDown && falloff > controller.slideStopThreshold && !controller.onSlope;
-                
 
-                if (sliding == false && !shouldSlide)
+                bool canStand = CanStand();
+
+                if (!sliding && !shouldSlide)
                 {
-                    controller.movementDir = lastMovementDir;
-                    controller.ChangeState(CharacterStates.Idle);
+                    //controller.movementDir = lastMovementDir;
+                    if (canStand)
+                    {
+                        goingToCrouch = false;
+                        controller.ChangeState(CharacterStates.Idle);
+                    }
+                    else
+                    {
+                        goingToCrouch = true;
+                        controller.ChangeState(CharacterStates.Crouching);
+                    }
+
                 }
                 if (rb.velocity.magnitude > 5)
                 {
