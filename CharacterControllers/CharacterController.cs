@@ -180,10 +180,11 @@ namespace OmnicatLabs.CharacterControllers
             SlopeCheck();
             //WallCheck();
             WallRunCheck();
-            Debug.Log(state);
+            //Debug.Log(state);
+            //Debug.Log(isGrounded);
             //Debug.Log(state.ToString() + isCrouching.ToString());
             //Debug.Log(isCrouching);
-            Debug.Log(onSlope);
+            //Debug.Log(onSlope);
         }
 
         protected override void FixedUpdate()
@@ -226,7 +227,7 @@ namespace OmnicatLabs.CharacterControllers
             switch (groundCheckType)
             {
                 case GroundCheckType.Box:
-                    isGrounded = Physics.CheckBox(groundPoint.position, boxBounds / 2f, Quaternion.identity, groundLayer);
+                    isGrounded = Physics.CheckBox(groundPoint.position, boxBounds / 2f, Quaternion.identity, groundLayer, QueryTriggerInteraction.Ignore);
                     if (groundHit.transform != null) Debug.Log(groundHit.transform.name);
                     break;
                 case GroundCheckType.Raycast:
@@ -288,7 +289,7 @@ namespace OmnicatLabs.CharacterControllers
                 onAirJump.Invoke();
             }
 
-            if (context.performed && isGrounded && !isLocked)
+            if (context.performed && isGrounded && !isLocked && !isCrouching)
             {
                 jumpKeyDown = true;
                 ChangeState(CharacterStates.Jumping);
@@ -338,6 +339,7 @@ namespace OmnicatLabs.CharacterControllers
         public void SetControllerLocked(bool value, bool hidePlayer, bool unlockCursor)
         {
             SetPause(value);
+            GetComponent<PlayerInput>().enabled = !value;
             isLocked = value;
             mainCam.GetComponent<MouseLook>().enabled = !value;
 
