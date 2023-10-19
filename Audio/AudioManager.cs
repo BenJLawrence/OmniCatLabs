@@ -3,6 +3,13 @@ using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.Events;
 
+/*TODO
+ * Make the functions give the sources the references to filters if the sound has them. Right now they will always get them manually
+ * Audio Mixers
+ * Add a timed pause
+ * Add a timed loop
+ */
+
 namespace OmnicatLabs.Audio
 {
     public enum SoundMode
@@ -33,6 +40,7 @@ namespace OmnicatLabs.Audio
         [Range(0f, 1.1f)]
         public float reverbZoneMix = 1f;
         public bool loop;
+        [Tooltip("All playOnAwake sounds are played in simultaneous mode")]
         public bool playOnAwake;
         [Range(0f, 5f)]
         public float dopplerLevel = 1f;
@@ -96,7 +104,8 @@ namespace OmnicatLabs.Audio
         public List<Sound> sounds;
         public AudioMixer mixer;
 
-        private List<AudioSource> sources = new List<AudioSource>();
+        [HideInInspector]
+        public List<AudioSource> sources = new List<AudioSource>();
 
         private void Awake()
         {
@@ -115,10 +124,10 @@ namespace OmnicatLabs.Audio
             }
         }
 
-        public void Play(string name, SoundMode mode = SoundMode.Queue)
+        public void Play(string name, SoundMode mode = SoundMode.Simultaneous)
         {
-            AudioSource source = null;
-            SourceController controller = null;
+            AudioSource source = GetComponent<AudioSource>();
+            SourceController controller = GetComponent<SourceController>();
             Sound soundToPlay = sounds.Find(sound => sound.name == name);
             if (soundToPlay == null)
             {
@@ -134,15 +143,11 @@ namespace OmnicatLabs.Audio
                     areAnyPlaying = true;
                 }
             }
-            if (GetComponent<AudioSource>() == null || (mode == SoundMode.Simultaneous && areAnyPlaying))
+            if ((source == null && controller == null) || (mode == SoundMode.Simultaneous && areAnyPlaying))
             {
                 source = gameObject.AddComponent<AudioSource>();
-                sources.Add(source);
-            }
-
-            if (GetComponent<SourceController>() == null || mode == SoundMode.Simultaneous)
-            {
                 controller = gameObject.AddComponent<SourceController>();
+                sources.Add(source);
             }
 
             controller.assignedSource = source;
@@ -194,7 +199,7 @@ namespace OmnicatLabs.Audio
 
             if (mode == SoundMode.Queue)
             {
-                controller.soundQueue.Enqueue(source);
+                controller.soundQueue.Enqueue(soundToPlay);
             }
             else
             {
@@ -202,35 +207,49 @@ namespace OmnicatLabs.Audio
             }
         }
 
-        public void Play(string name, GameObject sourceObject, SoundMode mode = SoundMode.Queue)
+        public GameObject Play(string name, GameObject sourceObject, SoundMode mode = SoundMode.Simultaneous)
         {
+            AudioSource source = GetComponent<AudioSource>();
+            SourceController controller = GetComponent<SourceController>();
             Sound soundToPlay = sounds.Find(sound => sound.name == name);
             if (soundToPlay == null)
             {
                 Debug.LogError($"Sound: {name} not found");
             }
+
             #region Source
-            if (sourceObject.GetComponent<AudioSource>() == null)
+            bool areAnyPlaying = false;
+            foreach (AudioSource _source in sources)
             {
-                AudioSource source = sourceObject.AddComponent<AudioSource>();
+                if (_source.isPlaying)
+                {
+                    areAnyPlaying = true;
+                }
+            }
+            if ((source == null && controller == null) || (mode == SoundMode.Simultaneous && areAnyPlaying))
+            {
+                source = sourceObject.AddComponent<AudioSource>();
+                controller = sourceObject.AddComponent<SourceController>();
                 sources.Add(source);
             }
-            
-            SetupSource(sourceObject.GetComponent<AudioSource>(), soundToPlay);
+
+            controller.assignedSource = source;
+
+            SetupSource(source, soundToPlay);
             #endregion
             #region Reverb
             if (soundToPlay.reverbPreset != AudioReverbPreset.Off)
             {
-                if (sourceObject.GetComponent<AudioReverbFilter>() == null)
+                if (GetComponent<AudioReverbFilter>() == null)
                 {
                     AudioReverbFilter filter = sourceObject.AddComponent<AudioReverbFilter>();
                 }
 
-                sourceObject.GetComponent<AudioReverbFilter>().reverbPreset = soundToPlay.reverbPreset;
+                GetComponent<AudioReverbFilter>().reverbPreset = soundToPlay.reverbPreset;
             }
             else if (soundToPlay.reverbPreset == AudioReverbPreset.User)
             {
-                if (sourceObject.GetComponent<AudioReverbFilter>() == null)
+                if (GetComponent<AudioReverbFilter>() == null)
                 {
                     AudioReverbFilter filter = sourceObject.AddComponent<AudioReverbFilter>();
                 }
@@ -241,116 +260,254 @@ namespace OmnicatLabs.Audio
             #region Echo
             if (soundToPlay.useEcho)
             {
-                if (sourceObject.GetComponent<AudioEchoFilter>() == null)
+                if (GetComponent<AudioEchoFilter>() == null)
                 {
                     sourceObject.AddComponent<AudioEchoFilter>();
                 }
 
-                SetupEchoFilter(sourceObject.GetComponent<AudioEchoFilter>(), soundToPlay.echo);
+                SetupEchoFilter(GetComponent<AudioEchoFilter>(), soundToPlay.echo);
             }
             #endregion
             #region Distortion
             if (soundToPlay.useDistortion)
             {
-                if (sourceObject.GetComponent<AudioDistortionFilter>() == null)
+                if (GetComponent<AudioDistortionFilter>() == null)
                 {
                     sourceObject.AddComponent<AudioDistortionFilter>();
                 }
 
-                SetupDistortionFilter(sourceObject.GetComponent<AudioDistortionFilter>(), soundToPlay.distortion);
+                SetupDistortionFilter(GetComponent<AudioDistortionFilter>(), soundToPlay.distortion);
             }
             #endregion
 
-            sourceObject.GetComponent<AudioSource>().Play();
+            if (mode == SoundMode.Queue)
+            {
+                controller.soundQueue.Enqueue(soundToPlay);
+            }
+            else
+            {
+                source.Play();
+            }
+
+            return sourceObject;
         }
 
-        public GameObject Play(string name, Vector3 position, UnityAction listener)
+        public void Play(string name, Vector3 position, SoundMode mode = SoundMode.Simultaneous)
         {
+            var sourceObject = Instantiate(Resources.Load("AudioProjector") as GameObject, position, Quaternion.identity);
+            AudioSource source = GetComponent<AudioSource>();
+            SourceController controller = GetComponent<SourceController>();
             Sound soundToPlay = sounds.Find(sound => sound.name == name);
             if (soundToPlay == null)
             {
                 Debug.LogError($"Sound: {name} not found");
             }
 
-            GameObject sourceObject = Instantiate(Resources.Load("AudioProjector") as GameObject, position, Quaternion.identity);
-            sourceObject.name = $"{soundToPlay.name}'s Projector";
-            sources.Add(sourceObject.GetComponent<AudioSource>());
-            SetupSource(sourceObject.GetComponent<AudioSource>(), soundToPlay);
-
-            if (!soundToPlay.useEcho)
+            #region Source
+            bool areAnyPlaying = false;
+            foreach (AudioSource _source in sources)
             {
-                sourceObject.GetComponent<AudioEchoFilter>().enabled = false;
+                if (_source.isPlaying)
+                {
+                    areAnyPlaying = true;
+                }
+            }
+            if ((source == null && controller == null) || (mode == SoundMode.Simultaneous && areAnyPlaying))
+            {
+                source = sourceObject.AddComponent<AudioSource>();
+                controller = sourceObject.AddComponent<SourceController>();
+                sources.Add(source);
             }
 
-            if (!soundToPlay.useDistortion)
-            {
-                sourceObject.GetComponent<AudioDistortionFilter>().enabled = false;
-            }
+            controller.assignedSource = source;
 
-            soundToPlay.onSoundComplete.AddListener(listener);
-
+            SetupSource(source, soundToPlay);
+            #endregion
             #region Reverb
             if (soundToPlay.reverbPreset != AudioReverbPreset.Off)
             {
-                sourceObject.GetComponent<AudioReverbFilter>().reverbPreset = soundToPlay.reverbPreset;
+                if (GetComponent<AudioReverbFilter>() == null)
+                {
+                    AudioReverbFilter filter = sourceObject.AddComponent<AudioReverbFilter>();
+                }
+
+                GetComponent<AudioReverbFilter>().reverbPreset = soundToPlay.reverbPreset;
             }
             else if (soundToPlay.reverbPreset == AudioReverbPreset.User)
             {
-                SetupReverbFilter(sourceObject.GetComponent<AudioReverbFilter>(), soundToPlay.reverb);
-            }
+                if (GetComponent<AudioReverbFilter>() == null)
+                {
+                    AudioReverbFilter filter = sourceObject.AddComponent<AudioReverbFilter>();
+                }
 
-            sourceObject.GetComponent<AudioSource>().Play();
+                SetupReverbFilter(GetComponent<AudioReverbFilter>(), soundToPlay.reverb);
+            }
             #endregion
             #region Echo
             if (soundToPlay.useEcho)
             {
-                if (sourceObject.GetComponent<AudioEchoFilter>() == null)
+                if (GetComponent<AudioEchoFilter>() == null)
                 {
                     sourceObject.AddComponent<AudioEchoFilter>();
                 }
 
-                SetupEchoFilter(sourceObject.GetComponent<AudioEchoFilter>(), soundToPlay.echo);
+                SetupEchoFilter(GetComponent<AudioEchoFilter>(), soundToPlay.echo);
             }
             #endregion
             #region Distortion
             if (soundToPlay.useDistortion)
             {
-                if (sourceObject.GetComponent<AudioDistortionFilter>() == null)
+                if (GetComponent<AudioDistortionFilter>() == null)
                 {
                     sourceObject.AddComponent<AudioDistortionFilter>();
                 }
 
-                SetupDistortionFilter(sourceObject.GetComponent<AudioDistortionFilter>(), soundToPlay.distortion);
+                SetupDistortionFilter(GetComponent<AudioDistortionFilter>(), soundToPlay.distortion);
             }
             #endregion
 
-            return sourceObject;
+            if (mode == SoundMode.Queue)
+            {
+                controller.soundQueue.Enqueue(soundToPlay);
+            }
+            else
+            {
+                source.Play();
+            }
         }
 
+        #region Stop Methods
+        /// <summary>
+        /// Stops the playback of the specified track <br /> <br />
+        /// If multiple instances of the same track are playing it will stop only the first. <br />
+        /// Consider using StopAll if that behavior is needed.
+        /// </summary>
+        /// <param name="name">Name of the track to stop</param>
         public void Stop(string name)
         {
-            sources.Find(source => source.clip.name == name).Stop();
+            var sound = sounds.Find(sound => sound.name == name);
+            var source = sources.Find(source => source.clip.name == sound.clip.name);
+            source.Stop();
         }
 
-        public void Pause(string name)
+        /// <summary>
+        /// Stops the playback of the specified track on a given GameObject. <br /> <br />
+        /// Useful if you have multiple of the same track playing but only need to stop one.
+        /// </summary>
+        /// <param name="name">Name of the track to stop.</param>
+        /// <param name="sourceObject">GameObject that has the source playing the track.</param>
+        public void Stop(string name, GameObject sourceObject)
         {
-            sources.Find(source => source.clip.name == name).Pause();
+            var source = sourceObject.GetComponent<AudioSource>();
+
+            if (source != null)
+            {
+                source.Stop();
+            }
+            else
+            {
+                Debug.LogError($"Failed to Stop Sound: ({name}) On: ({sourceObject.name}) because object did not have an AudioSource");
+            }
         }
 
-        public void Resume()
-        {
-            sources.Find(source => source.clip.name == name).UnPause();
-        }
-
+        /// <summary>
+        /// Stops the playback of all tracks.
+        /// </summary>
         public void StopAll()
         {
-            foreach(AudioSource source in sources)
+            foreach (AudioSource source in sources)
             {
                 source.Stop();
             }
         }
+        #endregion
 
-        private void SetupSource(AudioSource source, Sound sound)
+        #region Pause Methods
+        /// <summary>
+        /// Pauses the playback of the specified track. <br /> <br />
+        /// If multiple instances of the same track are playing it will pause only the first. <br /> <br />
+        /// Use Resume to continue playback
+        /// </summary>
+        /// <param name="name">Name of the track to pause.</param>
+        public void Pause(string name)
+        {
+            var sound = sounds.Find(sound => sound.name == name);
+            var source = sources.Find(source => source.clip.name == sound.clip.name);
+            source.Pause();
+        }
+
+        /// <summary>
+        /// Pauses the playback of the specified track on the given GameObject <br /> <br />
+        /// Use Resume to continue playback.
+        /// </summary>
+        /// <param name="name">Name of the track to pause.</param>
+        public void Pause(string name, GameObject sourceObject)
+        {
+            var source = sourceObject.GetComponent<AudioSource>();
+
+            if (source != null)
+            {
+                source.Pause();
+            }
+            else
+            {
+                Debug.LogError($"Failed to Pause Sound: ({name}) On: ({sourceObject.name}) because object did not have an AudioSource");
+            }
+        }
+
+        /// <summary>
+        /// Pauses all tracks. <br /> <br />
+        /// Use ResumeAll to continue playback for all tracks.
+        /// </summary>
+        public void PauseAll()
+        {
+            sources.ForEach(source => source.Pause());
+        }
+        #endregion
+
+        #region Resume Methods
+        /// <summary>
+        /// Resumes the playback of the specified track. <br /> <br />
+        /// If multiple instances of the same track are paused it will resume only the first.
+        /// </summary>
+        /// <param name="name">Name of the track to resume.</param>
+        public void Resume(string name)
+        {
+            var sound = sounds.Find(sound => sound.name == name);
+            var source = sources.Find(source => source.clip.name == sound.clip.name);
+            source.UnPause();
+        }
+
+        /// <summary>
+        /// Resumes the playback of the specified track on the given GameObject
+        /// </summary>
+        /// <param name="name">Name of the track to resume.</param>
+        public void Resume(string name, GameObject sourceObject)
+        {
+            var source = sourceObject.GetComponent<AudioSource>();
+
+            if (source != null)
+            {
+                source.UnPause();
+            }
+            else
+            {
+                Debug.LogError($"Failed to Resume Sound: ({name}) On: ({sourceObject.name}) because object did not have an AudioSource");
+            }
+        }
+
+        /// <summary>
+        /// Resumes the playback of all tracks
+        /// </summary>
+        public void ResumeAll()
+        {
+            sources.ForEach(source => source.UnPause());
+        }
+
+        #endregion
+
+        #region Setup Methods
+        public void SetupSource(AudioSource source, Sound sound)
         {
             source.clip = sound.clip;
             source.volume = sound.volume;
@@ -369,7 +526,7 @@ namespace OmnicatLabs.Audio
             source.outputAudioMixerGroup = sound.outputAudioMixerGroup;
         }
 
-        private void SetupReverbFilter(AudioReverbFilter filter, Reverb reverb)
+        public void SetupReverbFilter(AudioReverbFilter filter, Reverb reverb)
         {
             filter.dryLevel = reverb.dryLevel;
             filter.room = reverb.room;
@@ -386,7 +543,7 @@ namespace OmnicatLabs.Audio
             filter.reverbDelay = reverb.reverbDelay;
         }
 
-        private void SetupEchoFilter(AudioEchoFilter filter, Echo echo)
+        public void SetupEchoFilter(AudioEchoFilter filter, Echo echo)
         {
             filter.delay = echo.delay;
             filter.decayRatio = echo.decayRatio;
@@ -394,9 +551,10 @@ namespace OmnicatLabs.Audio
             filter.wetMix = echo.wetMix;
         }
 
-        private void SetupDistortionFilter(AudioDistortionFilter filter, Distortion distortion)
+        public void SetupDistortionFilter(AudioDistortionFilter filter, Distortion distortion)
         {
             filter.distortionLevel = distortion.distortionLevel;
         }
+        #endregion
     }
 }

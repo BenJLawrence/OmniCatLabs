@@ -8,7 +8,13 @@ namespace OmnicatLabs.Audio
     {
         [HideInInspector]
         public AudioSource assignedSource;
-        internal Queue<AudioSource> soundQueue = new Queue<AudioSource>();
+        [HideInInspector]
+        public AudioReverbFilter assignedReverbFilter;
+        [HideInInspector]
+        public AudioEchoFilter assignedEchoFilter;
+        [HideInInspector]
+        public AudioDistortionFilter assignedDistortionFilter;
+        internal Queue<Sound> soundQueue = new Queue<Sound>();
         private bool completed = false;
 
         private void Start()
@@ -27,24 +33,58 @@ namespace OmnicatLabs.Audio
 
         private void Update()
         {
-            //if (!assignedSource.isPlaying && )
-
-            if (!assignedSource.isPlaying && !completed)
-            {
-                completed = true;
-                AudioManager.Instance.sounds.Find(sound => sound.clip.name == assignedSource.clip.name).onSoundComplete.Invoke();
-            }
-
             if (!assignedSource.isPlaying)
             {
-                //make sure audio source settings are accurate to the new sound
-                //play new sound
+                AudioManager.Instance.sounds.Find(sound => sound.clip.name == assignedSource.clip.name).onSoundComplete.Invoke();
+                if (soundQueue != null && soundQueue.Count > 0)
+                    soundQueue.Dequeue();
+                if (soundQueue.Count == 0)
+                {
+                    AudioManager.Instance.sources.Remove(assignedSource);
+                    if (GetComponent<DestroyAtSoundEnd>())
+                        Destroy(gameObject);
+
+                    Destroy(assignedSource);
+                    Destroy(assignedDistortionFilter);
+                    Destroy(assignedEchoFilter);
+                    Destroy(assignedReverbFilter);
+                    Destroy(this);
+                }
+                else
+                {
+                    var nextUp = soundQueue.Peek();
+                    AudioManager.Instance.SetupSource(assignedSource, nextUp);
+                    
+                    if (nextUp.reverbPreset != AudioReverbPreset.Off)
+                    {
+                        if (!GetComponent<AudioReverbFilter>())
+                        {
+                            assignedReverbFilter = gameObject.AddComponent<AudioReverbFilter>();
+                        }
+                        AudioManager.Instance.SetupReverbFilter(assignedReverbFilter, nextUp.reverb);
+                    }
+
+                    if (nextUp.useDistortion)
+                    {
+                        if (!GetComponent<AudioDistortionFilter>())
+                        {
+                            assignedDistortionFilter = gameObject.AddComponent<AudioDistortionFilter>();
+                        }
+                        AudioManager.Instance.SetupDistortionFilter(assignedDistortionFilter, nextUp.distortion);
+                    }
+
+                    if (nextUp.useEcho)
+                    {
+                        if (!GetComponent<AudioEchoFilter>())
+                        {
+                            assignedEchoFilter = gameObject.AddComponent<AudioEchoFilter>();
+                        }
+                        AudioManager.Instance.SetupEchoFilter(assignedEchoFilter, nextUp.echo);
+                    }
+
+                    assignedSource.Play();
+                }
             }
-        }
-
-        private void Play()
-        {
-
         }
     }
 }

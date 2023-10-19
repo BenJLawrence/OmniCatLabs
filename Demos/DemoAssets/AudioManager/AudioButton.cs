@@ -9,17 +9,35 @@ namespace OmnicatLabs.Demos.Audio
 
         public void PlayAtPosition(int mode)
         {
-            AudioManager.Instance.Play("Test", Vector3.zero, Test);
+            AudioManager.Instance.Play("BGM", Vector3.zero);
+        }
+        public void PlayAtPosition2(int mode)
+        {
+            AudioManager.Instance.Play("Test", Vector3.zero);
         }
 
         public void PlayOnObject(int mode)
+        {
+            AudioManager.Instance.Play("BGM", testObject, (SoundMode)mode);
+        }
+        public void PlayOnObject2(int mode)
         {
             AudioManager.Instance.Play("Test", testObject, (SoundMode)mode);
         }
 
         public void Play(int mode)
         {
+            AudioManager.Instance.Play("BGM", (SoundMode)mode);
+        }
+
+        public void Play2(int mode)
+        {
             AudioManager.Instance.Play("Test", (SoundMode)mode);
+        }
+
+        public void Stop()
+        {
+            AudioManager.Instance.Stop("BGM");
         }
 
         public void Test()
