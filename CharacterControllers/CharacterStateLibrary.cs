@@ -49,6 +49,12 @@ namespace OmnicatLabs.CharacterControllers
 
             public override void OnStateEnter<T>(StatefulObject<T> self)
             {
+                /*List<string> footsteps = new List<string>();
+                footsteps.Add("Footstep");
+                footsteps.Add("Footstep2");
+                footsteps.Add("Footstep3");
+                footsteps.Add("Footstep4");*/
+
                 base.OnStateEnter(self);
                 AudioManager.Instance.Play("Footstep");
 
