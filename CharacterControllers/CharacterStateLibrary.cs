@@ -41,6 +41,7 @@ namespace OmnicatLabs.CharacterControllers
         public class MoveState : CharacterState
         {
             private Timer timer;
+            private float targetSpeed;
             public override void OnStateInit<T>(StatefulObject<T> self)
             {
                 base.OnStateInit(self);
@@ -73,7 +74,7 @@ namespace OmnicatLabs.CharacterControllers
                 //    Debug.Log((result, "Downslope"));
                 //}
 
-                float targetSpeed = controller.sprinting ? controller.moveSpeed * controller.sprintMultiplier : controller.moveSpeed;
+                targetSpeed = controller.sprinting && controller.currentStamina > 0f ? controller.moveSpeed * controller.sprintMultiplier : controller.moveSpeed;
                 //Debug.Log(targetSpeed);
                 if (!controller.onSlope)
                 {
@@ -81,7 +82,7 @@ namespace OmnicatLabs.CharacterControllers
                 }
                 else if (controller.onSlope)
                 {
-                    targetSpeed = controller.sprinting ? controller.slopeSpeed * controller.sprintMultiplier : controller.slopeSpeed;
+                    targetSpeed = controller.sprinting && controller.currentStamina > 0f ? controller.slopeSpeed * controller.sprintMultiplier : controller.slopeSpeed;
                     //rb.velocity = GetSlopeMoveDir() * targetSpeed * Time.deltaTime;
 
                     if (controller.maintainVelocity)
@@ -106,6 +107,11 @@ namespace OmnicatLabs.CharacterControllers
                 {
                     controller.currentStamina -= controller.staminaReductionRate * Time.deltaTime;
                     controller.staminaSlider.value = controller.currentStamina;
+                    if (controller.currentStamina < 0f)
+                    {
+                        controller.currentStamina = 0f;
+                        targetSpeed = controller.onSlope ? controller.slopeSpeed : controller.moveSpeed;
+                    }
                 }
                 if (controller.movementDir != Vector3.zero)
                 {
