@@ -58,7 +58,7 @@ namespace OmnicatLabs.CharacterControllers
                 base.OnStateEnter(self);
                 AudioManager.Instance.Play("Footstep");
 
-                TimerManager.Instance.CreateTimer(controller.footstepInterval, () => AudioManager.Instance.Play("Footstep"), true);
+                TimerManager.Instance.CreateTimer(controller.footstepInterval, () => AudioManager.Instance.Play("Footstep"), out timer, true);
             }
 
             public override void OnStateExit<T>(StatefulObject<T> self)
