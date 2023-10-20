@@ -3,12 +3,13 @@ using UnityEngine.InputSystem;
 using UnityEngine.Events;
 using System;
 using OmnicatLabs.StatefulObject;
+using UnityEngine.UI;
 
 namespace OmnicatLabs.CharacterControllers
 {
     public class CharacterStates : State<CharacterState>
     {
-        private static AnimationTriggers crouchTriggers = new AnimationTriggers("Crouch", null, "Uncrouch");
+        private static OmnicatLabs.StatefulObject.AnimationTriggers crouchTriggers = new OmnicatLabs.StatefulObject.AnimationTriggers("Crouch", null, "Uncrouch");
 
         public static readonly State<CharacterState> Moving = new CharacterStateLibrary.MoveState();
         [DefaultState] public static readonly State<CharacterState> Idle = new CharacterStateLibrary.IdleState();
@@ -53,6 +54,11 @@ namespace OmnicatLabs.CharacterControllers
         public bool multiDirSprint = false;
         [Tooltip("How far in front of the player the controller checks for walls in order to prevent sticking. Generally this be slightly longer than the width of the character")]
         public float wallCheckDistance = .6f;
+        public float maxStamina = 100f;
+        [Tooltip("The rate at which stamina decreases. Treat as value loss per second. 1 reduction is 1 stamina lost every second of a stamina action")]
+        public float staminaReductionRate = 1f;
+        public bool sprintUsesStamina = false;
+        public float footstepInterval = 5f;
 
         [Header("Ground Checks")]
         public GroundCheckType groundCheckType;
@@ -124,6 +130,7 @@ namespace OmnicatLabs.CharacterControllers
         [Tooltip("The threshold that controls when a slide is forced to end. The higher the number, the quicker the slide will stop")]
         public float slideStopThreshold = 1.5f;
         public float slideTransitionSpeed = .2f;
+        public bool slideUsesStamina = true;
 
         [Header("Wall Running")]
         public bool wallRunningUnlocked;
@@ -131,6 +138,8 @@ namespace OmnicatLabs.CharacterControllers
         public float wallRunSpeed = 500f;
         public float maxWallRunTime = 3f;
 
+        [Header("UI")]
+        public Slider staminaSlider;
 
         internal Vector3 movementDir;
         internal bool isGrounded = true;
@@ -155,8 +164,12 @@ namespace OmnicatLabs.CharacterControllers
         internal bool wallRunning = false;
         internal Vector3 fixedGroundPoint;
         internal bool isLocked = false;
+        internal float currentStamina;
+        internal Transform camHolder;
         [HideInInspector]
         public bool playerIsHidden = false;
+        [HideInInspector]
+        public float startingCamHeight;
 
         protected override void Awake()
         {
@@ -170,6 +183,18 @@ namespace OmnicatLabs.CharacterControllers
         private void Start()
         {
             rb = GetComponent<Rigidbody>();
+            camHolder = mainCam.transform.parent;
+            startingCamHeight = camHolder.transform.localPosition.y;
+            if (staminaSlider == null)
+            {
+                Debug.LogError("The slider for stamina has not been set in the inspector");
+            }
+            else
+            {
+                staminaSlider.maxValue = maxStamina;
+                staminaSlider.value = maxStamina;
+            }
+            currentStamina = maxStamina;
             fixedGroundPoint = groundPoint.localPosition;
         }
 
@@ -180,7 +205,6 @@ namespace OmnicatLabs.CharacterControllers
             SlopeCheck();
             //WallCheck();
             WallRunCheck();
-            //Debug.Log(state);
             //Debug.Log(isGrounded);
             //Debug.Log(state.ToString() + isCrouching.ToString());
             //Debug.Log(isCrouching);
@@ -190,6 +214,12 @@ namespace OmnicatLabs.CharacterControllers
         protected override void FixedUpdate()
         {
             base.FixedUpdate();
+        }
+
+        public void ChangeStamina(float value)
+        {
+            currentStamina += value;
+            staminaSlider.value = currentStamina;
         }
 
         private void WallRunCheck()
@@ -341,7 +371,7 @@ namespace OmnicatLabs.CharacterControllers
             SetPause(value);
             GetComponent<PlayerInput>().enabled = !value;
             isLocked = value;
-            mainCam.GetComponent<MouseLook>().enabled = !value;
+            GetComponentInChildren<MouseLook>().enabled = !value;
 
             if (hidePlayer)
             {

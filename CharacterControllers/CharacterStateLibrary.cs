@@ -3,6 +3,8 @@ using System.Collections;
 using UnityEngine;
 using OmnicatLabs.StatefulObject;
 using OmnicatLabs.Tween;
+using OmnicatLabs.Timers;
+using OmnicatLabs.Audio;
 
 namespace OmnicatLabs.CharacterControllers
 {
@@ -38,6 +40,7 @@ namespace OmnicatLabs.CharacterControllers
     {
         public class MoveState : CharacterState
         {
+            private Timer timer;
             public override void OnStateInit<T>(StatefulObject<T> self)
             {
                 base.OnStateInit(self);
@@ -46,11 +49,15 @@ namespace OmnicatLabs.CharacterControllers
             public override void OnStateEnter<T>(StatefulObject<T> self)
             {
                 base.OnStateEnter(self);
+                AudioManager.Instance.Play("Footstep");
+
+                    TimerManager.Instance.CreateTimer(controller.footstepInterval, () => AudioManager.Instance.Play("Footstep"), out timer, true);
             }
 
             public override void OnStateExit<T>(StatefulObject<T> self)
             {
-
+                
+                    TimerManager.Instance.Stop(timer);
             }
 
             public override void OnStateFixedUpdate<T>(StatefulObject<T> self)
@@ -95,6 +102,11 @@ namespace OmnicatLabs.CharacterControllers
             public override void OnStateUpdate<T>(StatefulObject<T> self)
             {
                 lastSprinting = controller.sprinting;
+                if (controller.sprinting && controller.sprintUsesStamina)
+                {
+                    controller.currentStamina -= controller.staminaReductionRate * Time.deltaTime;
+                    controller.staminaSlider.value = controller.currentStamina;
+                }
                 if (controller.movementDir != Vector3.zero)
                 {
                     lastMovementDir = controller.movementDir;
@@ -543,7 +555,7 @@ namespace OmnicatLabs.CharacterControllers
 
             public override void OnStateFixedUpdate<T>(StatefulObject<T> self)
             {
-                float targetSpeed = controller.slopeSpeed * controller.crouchSpeedModifier;
+                float targetSpeed = controller.onSlope ? controller.slopeSpeed * controller.crouchSpeedModifier : controller.moveSpeed * controller.crouchSpeedModifier;
                 if (!controller.onSlope)
                 {
                     rb.AddRelativeForce(controller.movementDir * targetSpeed * Time.deltaTime, ForceMode.Impulse);
@@ -570,7 +582,7 @@ namespace OmnicatLabs.CharacterControllers
                 if (!inCrouch && controller.isCrouching)
                 {
                     controller.modelCollider.TweenHeight(controller.crouchHeight, controller.toCrouchSpeed, () => { rb.AddForce(Vector3.down * 100f, ForceMode.Impulse); }, EasingFunctions.Ease.EaseOutQuart);
-                    controller.mainCam.transform.TweenYPos(controller.crouchHeight, controller.toCrouchSpeed, null, () => { rb.AddForce(Vector3.down * 500f * Time.deltaTime, ForceMode.Force); }, EasingFunctions.Ease.EaseOutQuart);
+                    controller.camHolder.transform.TweenYPos(controller.crouchHeight, controller.toCrouchSpeed, null, () => { rb.AddForce(Vector3.down * 500f * Time.deltaTime, ForceMode.Force); }, EasingFunctions.Ease.EaseOutQuart);
                     inCrouch = true;
                 }
 
@@ -579,7 +591,7 @@ namespace OmnicatLabs.CharacterControllers
                     if (CanStand())
                     {
                         controller.modelCollider.TweenHeight(originalColHeight, controller.toCrouchSpeed, () => { }, EasingFunctions.Ease.EaseOutQuart);
-                        controller.mainCam.transform.TweenYPos(controller.originalHeight, controller.toCrouchSpeed, null, null, EasingFunctions.Ease.EaseOutQuart);
+                        controller.camHolder.transform.TweenYPos(controller.originalHeight, controller.toCrouchSpeed, null, null, EasingFunctions.Ease.EaseOutQuart);
                         inCrouch = false;
                         controller.ChangeState(CharacterStates.Idle);
                     }
@@ -620,7 +632,7 @@ namespace OmnicatLabs.CharacterControllers
                 slideDir = controller.transform.forward;
 
                 controller.modelCollider.TweenHeight(controller.crouchHeight, controller.slideTransitionSpeed, () => { }, EasingFunctions.Ease.EaseOutQuart);
-                controller.mainCam.transform.TweenYPos(controller.crouchHeight, controller.slideTransitionSpeed, () => { }, () => { rb.AddForce(Vector3.down * 1000f * Time.deltaTime, ForceMode.Force); }, EasingFunctions.Ease.EaseOutQuart);
+                controller.camHolder.transform.TweenYPos(controller.crouchHeight, controller.slideTransitionSpeed, () => { }, () => { rb.AddForce(Vector3.down * 1000f * Time.deltaTime, ForceMode.Force); }, EasingFunctions.Ease.EaseOutQuart);
                 //controller.mainCam.transform.TweenPosition(new Vector3(controller.mainCam.transform.position.x, controller.crouchHeight, controller.mainCam.transform.position.z), controller.toCrouchSpeed, () => { }, EasingFunctions.Ease.EaseOutQuart);
             }
 
@@ -630,7 +642,7 @@ namespace OmnicatLabs.CharacterControllers
                 if (!goingToCrouch)
                 {
                     controller.modelCollider.TweenHeight(originalHeight, controller.slideTransitionSpeed, () => { }, EasingFunctions.Ease.EaseOutQuart);
-                    controller.mainCam.transform.TweenYPos(controller.originalHeight, controller.slideTransitionSpeed, () => { }, null, EasingFunctions.Ease.EaseOutQuart);
+                    controller.camHolder.transform.TweenYPos(controller.originalHeight, controller.slideTransitionSpeed, () => { }, null, EasingFunctions.Ease.EaseOutQuart);
                 }
 
                 //controller.isCrouching = false;
@@ -644,8 +656,14 @@ namespace OmnicatLabs.CharacterControllers
                 {
                     sliding = true;
                     rb.AddForce(slideDir * controller.slideSpeed * falloff * Time.deltaTime);
+
                     falloff *= controller.slideSpeedReduction;
-                    //Debug.Log(falloff);
+
+                    if (controller.slideUsesStamina)
+                    {
+                        controller.currentStamina -= controller.staminaReductionRate * Time.deltaTime;
+                        controller.staminaSlider.value = controller.currentStamina;
+                    }
                 }
                 else
                 {
