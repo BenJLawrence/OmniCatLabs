@@ -669,6 +669,10 @@ namespace OmnicatLabs.CharacterControllers
                     {
                         controller.currentStamina -= controller.staminaReductionRate * Time.deltaTime;
                         controller.staminaSlider.value = controller.currentStamina;
+                        if (controller.currentStamina < 0f)
+                        {
+                            controller.currentStamina = 0f;
+                        }
                     }
                 }
                 else
@@ -679,7 +683,7 @@ namespace OmnicatLabs.CharacterControllers
 
             public override void OnStateUpdate<T>(StatefulObject<T> self)
             {
-                shouldSlide = controller.slideKeyDown && falloff > controller.slideStopThreshold && !controller.onSlope;
+                shouldSlide = controller.slideKeyDown && falloff > controller.slideStopThreshold && !controller.onSlope && controller.currentStamina > 0f;
 
                 bool canStand = CanStand();
 
