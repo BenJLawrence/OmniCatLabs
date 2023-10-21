@@ -30,7 +30,7 @@ namespace OmnicatLabs.CharacterControllers
             Cursor.lockState = CursorLockMode.Locked;
         }
 
-        private void Update()
+        private void LateUpdate()
         {
             if (canMove)
             {

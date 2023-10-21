@@ -343,8 +343,9 @@ namespace OmnicatLabs.Timers
 
         private void Update()
         {
-            foreach (Timer timer in timers)
+            for (int i = 0; i < timers.Count; i++)
             {
+                var timer = timers[i];
                 if (!timer.isPaused)
                 {
                     timer.timeRemaining -= Time.deltaTime;

@@ -56,15 +56,15 @@ namespace OmnicatLabs.CharacterControllers
                 footsteps.Add("Footstep4");*/
 
                 base.OnStateEnter(self);
-                AudioManager.Instance.Play("Footstep");
+                //AudioManager.Instance.Play("Footstep");
 
-                TimerManager.Instance.CreateTimer(controller.footstepInterval, () => AudioManager.Instance.Play("Footstep"), out timer, true);
+                //TimerManager.Instance.CreateTimer(controller.footstepInterval, () => AudioManager.Instance.Play("Footstep"), out timer, true);
             }
 
             public override void OnStateExit<T>(StatefulObject<T> self)
             {
                 
-                    TimerManager.Instance.Stop(timer);
+                    //TimerManager.Instance.Stop(timer);
             }
 
             public override void OnStateFixedUpdate<T>(StatefulObject<T> self)
