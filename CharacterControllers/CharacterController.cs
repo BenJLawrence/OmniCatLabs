@@ -205,6 +205,7 @@ namespace OmnicatLabs.CharacterControllers
             SlopeCheck();
             //WallCheck();
             WallRunCheck();
+            Debug.Log(state);
             //Debug.Log(isGrounded);
             //Debug.Log(state.ToString() + isCrouching.ToString());
             //Debug.Log(isCrouching);

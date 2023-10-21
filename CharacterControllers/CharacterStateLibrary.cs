@@ -526,8 +526,8 @@ namespace OmnicatLabs.CharacterControllers
             public bool CanStand()
             {
                 Vector3 startPos = controller.transform.position + controller.modelCollider.center;
-                Debug.DrawRay(startPos, Vector3.up * originalColHeight, Color.green, 99f);
-                return !Physics.Raycast(startPos, Vector3.up, originalColHeight, ~LayerMask.NameToLayer("Player"));
+                Debug.DrawRay(startPos, Vector3.up * controller.originalHeight, Color.green, 99f);
+                return !Physics.Raycast(startPos, Vector3.up, controller.originalHeight, ~LayerMask.NameToLayer("Player"));
             }
 
             public override void OnStateInit<T>(StatefulObject<T> self)
