@@ -170,6 +170,8 @@ namespace OmnicatLabs.CharacterControllers
         public bool playerIsHidden = false;
         [HideInInspector]
         public float startingCamHeight;
+        [HideInInspector]
+        public float savedStamina = 0f;
 
         protected override void Awake()
         {
@@ -194,8 +196,15 @@ namespace OmnicatLabs.CharacterControllers
                 staminaSlider.maxValue = maxStamina;
                 staminaSlider.value = maxStamina;
             }
+            SaveManager.Instance.onReset.AddListener(ResetStamina);
             currentStamina = maxStamina;
             fixedGroundPoint = groundPoint.localPosition;
+        }
+
+        private void ResetStamina()
+        {
+            currentStamina = savedStamina;
+            staminaSlider.value = currentStamina;
         }
 
         protected override void Update()
@@ -220,7 +229,7 @@ namespace OmnicatLabs.CharacterControllers
         public void ChangeStamina(float value)
         {
             currentStamina += value;
-            staminaSlider.value = currentStamina;
+            staminaSlider.value = maxStamina;
         }
 
         private void WallRunCheck()
