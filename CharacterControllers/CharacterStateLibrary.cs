@@ -49,16 +49,22 @@ namespace OmnicatLabs.CharacterControllers
 
             public override void OnStateEnter<T>(StatefulObject<T> self)
             {
-                base.OnStateEnter(self);
-                AudioManager.Instance.Play("Footstep");
+                /*List<string> footsteps = new List<string>();
+                footsteps.Add("Footstep");
+                footsteps.Add("Footstep2");
+                footsteps.Add("Footstep3");
+                footsteps.Add("Footstep4");*/
 
-                    TimerManager.Instance.CreateTimer(controller.footstepInterval, () => AudioManager.Instance.Play("Footstep"), out timer, true);
+                base.OnStateEnter(self);
+                //AudioManager.Instance.Play("Footstep");
+
+                //TimerManager.Instance.CreateTimer(controller.footstepInterval, () => AudioManager.Instance.Play("Footstep"), out timer, true);
             }
 
             public override void OnStateExit<T>(StatefulObject<T> self)
             {
                 
-                    TimerManager.Instance.Stop(timer);
+                    //TimerManager.Instance.Stop(timer);
             }
 
             public override void OnStateFixedUpdate<T>(StatefulObject<T> self)
@@ -520,8 +526,8 @@ namespace OmnicatLabs.CharacterControllers
             public bool CanStand()
             {
                 Vector3 startPos = controller.transform.position + controller.modelCollider.center;
-                Debug.DrawRay(startPos, Vector3.up * originalColHeight, Color.green, 99f);
-                return !Physics.Raycast(startPos, Vector3.up, originalColHeight, ~LayerMask.NameToLayer("Player"));
+                Debug.DrawRay(startPos, Vector3.up * controller.originalHeight, Color.green, 99f);
+                return !Physics.Raycast(startPos, Vector3.up, controller.originalHeight, ~LayerMask.NameToLayer("Player"));
             }
 
             public override void OnStateInit<T>(StatefulObject<T> self)

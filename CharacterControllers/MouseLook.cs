@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace OmnicatLabs.CharacterControllers
 {
@@ -7,6 +8,7 @@ namespace OmnicatLabs.CharacterControllers
         public float sensitivity = 100f;
         public Transform body;
         public Transform weaponCam;
+        public Slider sensitivitySetting;
 
         private float xRotation = 0f;
         private bool canMove = true;
@@ -28,10 +30,15 @@ namespace OmnicatLabs.CharacterControllers
             Cursor.lockState = CursorLockMode.Locked;
         }
 
-        private void Update()
+        private void LateUpdate()
         {
             if (canMove)
             {
+
+                if (sensitivitySetting != null)
+                {
+                    sensitivity = sensitivitySetting.value;
+                }
                 float mouseX = Input.GetAxis("Mouse X") * sensitivity * Time.deltaTime;
                 float mouseY = Input.GetAxis("Mouse Y") * sensitivity * Time.deltaTime;
 

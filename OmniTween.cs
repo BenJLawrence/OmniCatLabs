@@ -264,12 +264,12 @@ namespace OmnicatLabs.Tween
 
         private void Update()
         {
-            foreach (Tween tween in tweens)
+            for (int i = 0; i < tweens.Count; i++)
             {
-                tween.DoTween();
-                if (tween.completed && tween.onComplete != null)
+                tweens[i].DoTween();
+                if (tweens[i].completed && tweens[i].onComplete != null)
                 {
-                    tween.onComplete.Invoke();
+                    tweens[i].onComplete.Invoke();
                 }
             }
 
