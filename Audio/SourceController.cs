@@ -40,15 +40,16 @@ namespace OmnicatLabs.Audio
                     soundQueue.Dequeue();
                 if (soundQueue.Count == 0)
                 {
-                    AudioManager.Instance.sources.Remove(assignedSource);
-                    if (GetComponent<DestroyAtSoundEnd>())
-                        Destroy(gameObject);
+                    //AudioManager.Instance.sources.Remove(assignedSource);
+                    //if (GetComponent<DestroyAtSoundEnd>())
+                    //    Destroy(gameObject);
 
-                    Destroy(assignedSource);
-                    Destroy(assignedDistortionFilter);
-                    Destroy(assignedEchoFilter);
-                    Destroy(assignedReverbFilter);
-                    Destroy(this);
+                    //Destroy(assignedSource);
+                    //Destroy(assignedDistortionFilter);
+                    //Destroy(assignedEchoFilter);
+                    //Destroy(assignedReverbFilter);
+                    //Destroy(this);
+                    AudioManager.Instance.ReturnToQueue(gameObject);
                 }
                 else
                 {

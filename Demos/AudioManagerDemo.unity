@@ -276,7 +276,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &316007905
 RectTransform:
   m_ObjectHideFlags: 0
@@ -858,16 +858,16 @@ MonoBehaviour:
     volume: 0.316
     priority: 0
     pitch: 1
-    spatialBlend: 0
+    spatialBlend: 1
     panStereo: 0
     reverbZoneMix: 0
-    loop: 1
+    loop: 0
     playOnAwake: 0
     dopplerLevel: 1
     spread: 0
     rolloffMode: 0
     minDistance: 1
-    maxDistance: 500
+    maxDistance: 10
     outputAudioMixerGroup: {fileID: 24300002, guid: 88047c0fb8a3bbc48adcf178e243b110,
       type: 2}
     reverbPreset: 0
@@ -942,6 +942,7 @@ MonoBehaviour:
       m_PersistentCalls:
         m_Calls: []
   mixer: {fileID: 24100000, guid: 88047c0fb8a3bbc48adcf178e243b110, type: 2}
+  poolSize: 50
   sources: []
 --- !u!4 &823320259
 Transform:
@@ -1095,7 +1096,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &961131680
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1593,7 +1594,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1433457505
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2765,7 +2766,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &2134950165
 RectTransform:
   m_ObjectHideFlags: 0
