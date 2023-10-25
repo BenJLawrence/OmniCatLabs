@@ -103,14 +103,33 @@ namespace OmnicatLabs.Audio
         public static AudioManager Instance;
         public List<Sound> sounds;
         public AudioMixer mixer;
+        public int poolSize = 50;
 
         [HideInInspector]
         public List<AudioSource> sources = new List<AudioSource>();
+        private Queue<GameObject> sourcePool = new Queue<GameObject>();
+        private Transform poolParent;
 
         private void Awake()
         {
             if (Instance == null)
                 Instance = this;
+
+            poolParent = new GameObject().transform;
+            poolParent.name = "AudioSourcePool";
+            poolParent.transform.parent = transform;
+
+            for (int i = 0; i < poolSize; i++)
+            {
+                var go = new GameObject();
+                var source = go.AddComponent<AudioSource>();
+                sources.Add(source);
+                var controller = go.AddComponent<SourceController>();
+                controller.assignedSource = source;
+                go.transform.parent = poolParent.transform;
+                go.SetActive(false);
+                sourcePool.Enqueue(go);
+            }
         }
 
         private void Start()
@@ -124,10 +143,17 @@ namespace OmnicatLabs.Audio
             }
         }
 
+        private void Update()
+        {
+            Debug.Log(sourcePool.Count);
+        }
+
         public void Play(string name, SoundMode mode = SoundMode.Simultaneous)
         {
-            AudioSource source = GetComponent<AudioSource>();
-            SourceController controller = GetComponent<SourceController>();
+            var player = GetFromPool();
+            AudioSource source = player.GetComponent<AudioSource>();
+            SourceController controller = player.GetComponent<SourceController>();
+
             Sound soundToPlay = sounds.Find(sound => sound.name == name);
             if (soundToPlay == null)
             {
@@ -135,18 +161,19 @@ namespace OmnicatLabs.Audio
             }
 
             #region Source
-            bool areAnyPlaying = false;
-            foreach(AudioSource _source in sources)
+            bool allPlaying = false;
+            foreach (AudioSource _source in player.GetComponents<AudioSource>())
             {
-                if (_source.isPlaying)
+                if (!_source.isPlaying)
                 {
-                    areAnyPlaying = true;
+                    allPlaying = false;
                 }
+                else allPlaying = true;
             }
-            if ((source == null && controller == null) || (mode == SoundMode.Simultaneous && areAnyPlaying))
+            if ((source == null && controller == null) || (mode == SoundMode.Simultaneous && allPlaying))
             {
-                source = gameObject.AddComponent<AudioSource>();
-                controller = gameObject.AddComponent<SourceController>();
+                source = player.AddComponent<AudioSource>();
+                controller = player.AddComponent<SourceController>();
                 sources.Add(source);
             }
 
@@ -157,43 +184,43 @@ namespace OmnicatLabs.Audio
             #region Reverb
             if (soundToPlay.reverbPreset != AudioReverbPreset.Off)
             {
-                if (GetComponent<AudioReverbFilter>() == null)
+                if (player.GetComponent<AudioReverbFilter>() == null)
                 {
-                    AudioReverbFilter filter = gameObject.AddComponent<AudioReverbFilter>();
+                    AudioReverbFilter filter = player.AddComponent<AudioReverbFilter>();
                 }
 
-                GetComponent<AudioReverbFilter>().reverbPreset = soundToPlay.reverbPreset;
+                player.GetComponent<AudioReverbFilter>().reverbPreset = soundToPlay.reverbPreset;
             }
             else if (soundToPlay.reverbPreset == AudioReverbPreset.User)
             {
-                if (GetComponent<AudioReverbFilter>() == null)
+                if (player.GetComponent<AudioReverbFilter>() == null)
                 {
-                    AudioReverbFilter filter = gameObject.AddComponent<AudioReverbFilter>();
+                    AudioReverbFilter filter = player.AddComponent<AudioReverbFilter>();
                 }
 
-                SetupReverbFilter(GetComponent<AudioReverbFilter>(), soundToPlay.reverb);
+                SetupReverbFilter(player.GetComponent<AudioReverbFilter>(), soundToPlay.reverb);
             }
             #endregion
             #region Echo
             if (soundToPlay.useEcho)
             {
-                if (GetComponent<AudioEchoFilter>() == null)
+                if (player.GetComponent<AudioEchoFilter>() == null)
                 {
-                    gameObject.AddComponent<AudioEchoFilter>();
+                    player.AddComponent<AudioEchoFilter>();
                 }
 
-                SetupEchoFilter(GetComponent<AudioEchoFilter>(), soundToPlay.echo);
+                SetupEchoFilter(player.GetComponent<AudioEchoFilter>(), soundToPlay.echo);
             }
             #endregion
             #region Distortion
             if (soundToPlay.useDistortion)
             {
-                if (GetComponent<AudioDistortionFilter>() == null)
+                if (player.GetComponent<AudioDistortionFilter>() == null)
                 {
-                    gameObject.AddComponent<AudioDistortionFilter>();
+                    player.AddComponent<AudioDistortionFilter>();
                 }
 
-                SetupDistortionFilter(GetComponent<AudioDistortionFilter>(), soundToPlay.distortion);
+                SetupDistortionFilter(player.GetComponent<AudioDistortionFilter>(), soundToPlay.distortion);
             }
             #endregion
 
@@ -206,11 +233,14 @@ namespace OmnicatLabs.Audio
                 source.Play();
             }
         }
-
-        public GameObject Play(string name, GameObject sourceObject, SoundMode mode = SoundMode.Simultaneous)
+        public void Play(string name, GameObject sourceObject, SoundMode mode = SoundMode.Simultaneous)
         {
-            AudioSource source = GetComponent<AudioSource>();
-            SourceController controller = GetComponent<SourceController>();
+            var player = GetFromPool();
+            player.transform.position = sourceObject.transform.position;
+            player.transform.parent = sourceObject.transform;
+            AudioSource source = player.GetComponent<AudioSource>();
+            SourceController controller = player.GetComponent<SourceController>();
+
             Sound soundToPlay = sounds.Find(sound => sound.name == name);
             if (soundToPlay == null)
             {
@@ -218,18 +248,19 @@ namespace OmnicatLabs.Audio
             }
 
             #region Source
-            bool areAnyPlaying = false;
-            foreach (AudioSource _source in sources)
+            bool allPlaying = false;
+            foreach (AudioSource _source in player.GetComponents<AudioSource>())
             {
-                if (_source.isPlaying)
+                if (!_source.isPlaying)
                 {
-                    areAnyPlaying = true;
+                    allPlaying = false;
                 }
+                else allPlaying = true;
             }
-            if ((source == null && controller == null) || (mode == SoundMode.Simultaneous && areAnyPlaying))
+            if ((source == null && controller == null) || (mode == SoundMode.Simultaneous && allPlaying))
             {
-                source = sourceObject.AddComponent<AudioSource>();
-                controller = sourceObject.AddComponent<SourceController>();
+                source = player.AddComponent<AudioSource>();
+                controller = player.AddComponent<SourceController>();
                 sources.Add(source);
             }
 
@@ -240,43 +271,43 @@ namespace OmnicatLabs.Audio
             #region Reverb
             if (soundToPlay.reverbPreset != AudioReverbPreset.Off)
             {
-                if (GetComponent<AudioReverbFilter>() == null)
+                if (player.GetComponent<AudioReverbFilter>() == null)
                 {
-                    AudioReverbFilter filter = sourceObject.AddComponent<AudioReverbFilter>();
+                    AudioReverbFilter filter = player.AddComponent<AudioReverbFilter>();
                 }
 
-                GetComponent<AudioReverbFilter>().reverbPreset = soundToPlay.reverbPreset;
+                player.GetComponent<AudioReverbFilter>().reverbPreset = soundToPlay.reverbPreset;
             }
             else if (soundToPlay.reverbPreset == AudioReverbPreset.User)
             {
-                if (GetComponent<AudioReverbFilter>() == null)
+                if (player.GetComponent<AudioReverbFilter>() == null)
                 {
-                    AudioReverbFilter filter = sourceObject.AddComponent<AudioReverbFilter>();
+                    AudioReverbFilter filter = player.AddComponent<AudioReverbFilter>();
                 }
 
-                SetupReverbFilter(GetComponent<AudioReverbFilter>(), soundToPlay.reverb);
+                SetupReverbFilter(player.GetComponent<AudioReverbFilter>(), soundToPlay.reverb);
             }
             #endregion
             #region Echo
             if (soundToPlay.useEcho)
             {
-                if (GetComponent<AudioEchoFilter>() == null)
+                if (player.GetComponent<AudioEchoFilter>() == null)
                 {
-                    sourceObject.AddComponent<AudioEchoFilter>();
+                    player.AddComponent<AudioEchoFilter>();
                 }
 
-                SetupEchoFilter(GetComponent<AudioEchoFilter>(), soundToPlay.echo);
+                SetupEchoFilter(player.GetComponent<AudioEchoFilter>(), soundToPlay.echo);
             }
             #endregion
             #region Distortion
             if (soundToPlay.useDistortion)
             {
-                if (GetComponent<AudioDistortionFilter>() == null)
+                if (player.GetComponent<AudioDistortionFilter>() == null)
                 {
-                    sourceObject.AddComponent<AudioDistortionFilter>();
+                    player.AddComponent<AudioDistortionFilter>();
                 }
 
-                SetupDistortionFilter(GetComponent<AudioDistortionFilter>(), soundToPlay.distortion);
+                SetupDistortionFilter(player.GetComponent<AudioDistortionFilter>(), soundToPlay.distortion);
             }
             #endregion
 
@@ -288,15 +319,14 @@ namespace OmnicatLabs.Audio
             {
                 source.Play();
             }
-
-            return sourceObject;
         }
-
         public void Play(string name, Vector3 position, SoundMode mode = SoundMode.Simultaneous)
         {
-            var sourceObject = Instantiate(Resources.Load("AudioProjector") as GameObject, position, Quaternion.identity);
-            AudioSource source = GetComponent<AudioSource>();
-            SourceController controller = GetComponent<SourceController>();
+            var player = GetFromPool();
+            player.transform.position = position;
+            AudioSource source = player.GetComponent<AudioSource>();
+            SourceController controller = player.GetComponent<SourceController>();
+
             Sound soundToPlay = sounds.Find(sound => sound.name == name);
             if (soundToPlay == null)
             {
@@ -304,18 +334,19 @@ namespace OmnicatLabs.Audio
             }
 
             #region Source
-            bool areAnyPlaying = false;
-            foreach (AudioSource _source in sources)
+            bool allPlaying = false;
+            foreach (AudioSource _source in player.GetComponents<AudioSource>())
             {
-                if (_source.isPlaying)
+                if (!_source.isPlaying)
                 {
-                    areAnyPlaying = true;
+                    allPlaying = false;
                 }
+                else allPlaying = true;
             }
-            if ((source == null && controller == null) || (mode == SoundMode.Simultaneous && areAnyPlaying))
+            if ((source == null && controller == null) || (mode == SoundMode.Simultaneous && allPlaying))
             {
-                source = sourceObject.AddComponent<AudioSource>();
-                controller = sourceObject.AddComponent<SourceController>();
+                source = player.AddComponent<AudioSource>();
+                controller = player.AddComponent<SourceController>();
                 sources.Add(source);
             }
 
@@ -326,43 +357,43 @@ namespace OmnicatLabs.Audio
             #region Reverb
             if (soundToPlay.reverbPreset != AudioReverbPreset.Off)
             {
-                if (GetComponent<AudioReverbFilter>() == null)
+                if (player.GetComponent<AudioReverbFilter>() == null)
                 {
-                    AudioReverbFilter filter = sourceObject.AddComponent<AudioReverbFilter>();
+                    AudioReverbFilter filter = player.AddComponent<AudioReverbFilter>();
                 }
 
-                GetComponent<AudioReverbFilter>().reverbPreset = soundToPlay.reverbPreset;
+                player.GetComponent<AudioReverbFilter>().reverbPreset = soundToPlay.reverbPreset;
             }
             else if (soundToPlay.reverbPreset == AudioReverbPreset.User)
             {
-                if (GetComponent<AudioReverbFilter>() == null)
+                if (player.GetComponent<AudioReverbFilter>() == null)
                 {
-                    AudioReverbFilter filter = sourceObject.AddComponent<AudioReverbFilter>();
+                    AudioReverbFilter filter = player.AddComponent<AudioReverbFilter>();
                 }
 
-                SetupReverbFilter(GetComponent<AudioReverbFilter>(), soundToPlay.reverb);
+                SetupReverbFilter(player.GetComponent<AudioReverbFilter>(), soundToPlay.reverb);
             }
             #endregion
             #region Echo
             if (soundToPlay.useEcho)
             {
-                if (GetComponent<AudioEchoFilter>() == null)
+                if (player.GetComponent<AudioEchoFilter>() == null)
                 {
-                    sourceObject.AddComponent<AudioEchoFilter>();
+                    player.AddComponent<AudioEchoFilter>();
                 }
 
-                SetupEchoFilter(GetComponent<AudioEchoFilter>(), soundToPlay.echo);
+                SetupEchoFilter(player.GetComponent<AudioEchoFilter>(), soundToPlay.echo);
             }
             #endregion
             #region Distortion
             if (soundToPlay.useDistortion)
             {
-                if (GetComponent<AudioDistortionFilter>() == null)
+                if (player.GetComponent<AudioDistortionFilter>() == null)
                 {
-                    sourceObject.AddComponent<AudioDistortionFilter>();
+                    player.AddComponent<AudioDistortionFilter>();
                 }
 
-                SetupDistortionFilter(GetComponent<AudioDistortionFilter>(), soundToPlay.distortion);
+                SetupDistortionFilter(player.GetComponent<AudioDistortionFilter>(), soundToPlay.distortion);
             }
             #endregion
 
@@ -374,6 +405,20 @@ namespace OmnicatLabs.Audio
             {
                 source.Play();
             }
+        }
+
+        public void ReturnToQueue(GameObject sourceObject)
+        {
+            sourceObject.SetActive(false);
+            sourceObject.transform.position = transform.position;
+            sourceObject.transform.parent = poolParent.transform;
+            sourcePool.Enqueue(sourceObject);
+        }
+        private GameObject GetFromPool()
+        {
+            var obj = sourcePool.Dequeue();
+            obj.SetActive(true);
+            return obj;
         }
 
         #region Stop Methods
