@@ -21,6 +21,17 @@ namespace OmnicatLabs.Extensions
             }
             return component;
         }
+        public static T GetComponentInParentAndChildren<T>(this Transform gameObject, bool includeInactive = false) where T : Component
+        {
+            var component = gameObject.GetComponentInParent<T>(includeInactive);
+
+            if (!component)
+            {
+                component = gameObject.GetComponentInChildren<T>(includeInactive);
+            }
+
+            return component;
+        }
     }
 }
 

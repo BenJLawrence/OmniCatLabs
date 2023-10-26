@@ -133,12 +133,12 @@ namespace OmnicatLabs.CharacterControllers
                     controller.ChangeState(CharacterStates.Idle);
                 }
 
-                if (controller.sprinting && controller.isCrouching && !controller.onSlope)
+                if (controller.sprinting && controller.shouldCrouch && !controller.onSlope)
                 {
                     controller.ChangeState(CharacterStates.Slide);
                 }
 
-                if (controller.isCrouching && !controller.sprinting)
+                if (controller.shouldCrouch && !controller.sprinting)
                 {
                     controller.ChangeState(CharacterStates.Crouching);
                 }
@@ -191,7 +191,7 @@ namespace OmnicatLabs.CharacterControllers
                     controller.ChangeState(CharacterStates.Moving);
                 }
 
-                if (controller.isCrouching)
+                if (controller.shouldCrouch)
                 {
                     controller.ChangeState(CharacterStates.Crouching);
                 }
@@ -374,7 +374,8 @@ namespace OmnicatLabs.CharacterControllers
                 airTime = 0f;
 
                 rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
-                rb.AddForce((Vector3.up + rb.velocity.normalized) * controller.baseJumpForce , ForceMode.Impulse);
+
+                rb.AddForce((Vector3.up ) * controller.baseJumpForce, ForceMode.Impulse);
             }
 
             public override void OnStateExit<T>(StatefulObject<T> self)
@@ -483,7 +484,7 @@ namespace OmnicatLabs.CharacterControllers
             {
                 if (controller.movementDir == Vector3.zero)
                 {
-                    if (controller.isCrouching)
+                    if (controller.shouldCrouch)
                         controller.ChangeState(CharacterStates.Crouching);
                     else controller.ChangeState(CharacterStates.Idle);
                 }
@@ -591,21 +592,25 @@ namespace OmnicatLabs.CharacterControllers
 
             public override void OnStateUpdate<T>(StatefulObject<T> self)
             {
-                if (!inCrouch && controller.isCrouching)
+                if (!controller.isCrouching && controller.shouldCrouch)
                 {
                     controller.modelCollider.TweenHeight(controller.crouchHeight, controller.toCrouchSpeed, () => { rb.AddForce(Vector3.down * 100f, ForceMode.Impulse); }, EasingFunctions.Ease.EaseOutQuart);
                     controller.camHolder.transform.TweenYPos(controller.crouchHeight, controller.toCrouchSpeed, null, () => { rb.AddForce(Vector3.down * 500f * Time.deltaTime, ForceMode.Force); }, EasingFunctions.Ease.EaseOutQuart);
-                    inCrouch = true;
+                    controller.isCrouching = true;
                 }
 
-                if (inCrouch && !controller.isCrouching)
+                if (controller.isCrouching && !controller.shouldCrouch)
                 {
                     if (CanStand())
                     {
                         controller.modelCollider.TweenHeight(originalColHeight, controller.toCrouchSpeed, () => { }, EasingFunctions.Ease.EaseOutQuart);
                         controller.camHolder.transform.TweenYPos(controller.originalHeight, controller.toCrouchSpeed, null, null, EasingFunctions.Ease.EaseOutQuart);
-                        inCrouch = false;
+                        controller.isCrouching = false;
                         controller.ChangeState(CharacterStates.Idle);
+                    }
+                    else
+                    {
+                        controller.isCrouching = true;
                     }
                 }
 

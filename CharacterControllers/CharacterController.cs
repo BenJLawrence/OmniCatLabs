@@ -153,6 +153,7 @@ namespace OmnicatLabs.CharacterControllers
         internal bool onSlope;
         internal RaycastHit slopeHit;
         internal float groundAngle;
+        internal bool shouldCrouch = false;
         internal bool isCrouching = false;
         internal bool slideKeyDown = false;
         [HideInInspector]
@@ -214,7 +215,7 @@ namespace OmnicatLabs.CharacterControllers
             SlopeCheck();
             //WallCheck();
             WallRunCheck();
-            Debug.Log(state);
+            //Debug.Log(state);
             //Debug.Log(isGrounded);
             //Debug.Log(state.ToString() + isCrouching.ToString());
             //Debug.Log(isCrouching);
@@ -356,19 +357,19 @@ namespace OmnicatLabs.CharacterControllers
             {
                 if (context.performed && isGrounded)
                 {
-                    isCrouching = !isCrouching;
+                    shouldCrouch = !shouldCrouch;
                 }
             }
             else
             {
                 if (context.performed && isGrounded)
                 {
-                    isCrouching = true;
+                    shouldCrouch = true;
                 }
 
                 if (context.canceled)
                 {
-                    isCrouching = false;
+                    shouldCrouch = false;
 
                 }
             }

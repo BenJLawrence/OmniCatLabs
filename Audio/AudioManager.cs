@@ -143,11 +143,6 @@ namespace OmnicatLabs.Audio
             }
         }
 
-        private void Update()
-        {
-            Debug.Log(sourcePool.Count);
-        }
-
         public void Play(string name, SoundMode mode = SoundMode.Simultaneous)
         {
             var player = GetFromPool();

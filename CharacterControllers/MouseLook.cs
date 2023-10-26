@@ -39,14 +39,14 @@ namespace OmnicatLabs.CharacterControllers
                 {
                     sensitivity = sensitivitySetting.value;
                 }
-                float mouseX = Input.GetAxis("Mouse X") * sensitivity * Time.deltaTime;
-                float mouseY = Input.GetAxis("Mouse Y") * sensitivity * Time.deltaTime;
+                float mouseX = Input.GetAxis("Mouse X") * sensitivity;
+                float mouseY = Input.GetAxis("Mouse Y") * sensitivity;
 
                 xRotation -= mouseY;
-                xRotation = Mathf.Clamp(xRotation, -90f, 90f);
+                xRotation = Mathf.Clamp(xRotation, -85f, 85f);
 
                 body.Rotate(Vector3.up * mouseX);
-                transform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
+                transform.localRotation = Quaternion.Euler(xRotation, transform.localRotation.y, transform.localRotation.z);
             }
         }
     }
