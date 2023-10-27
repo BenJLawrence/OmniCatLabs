@@ -118,6 +118,7 @@ namespace OmnicatLabs.CharacterControllers
                     {
                         controller.currentStamina = 0f;
                         targetSpeed = controller.onSlope ? controller.slopeSpeed : controller.moveSpeed;
+                        
                     }
                 }
                 if (controller.movementDir != Vector3.zero)
@@ -127,6 +128,7 @@ namespace OmnicatLabs.CharacterControllers
                 if (controller.movementDir.z <= 0)
                 {
                     controller.sprinting = false;
+                    
                 }
 
                 if (controller.movementDir == Vector3.zero)
@@ -137,6 +139,7 @@ namespace OmnicatLabs.CharacterControllers
                 if (controller.sprinting && controller.shouldCrouch && !controller.onSlope)
                 {
                     controller.ChangeState(CharacterStates.Slide);
+                    AudioManager.Instance.Play("PlayerSlide");
                 }
 
                 if (controller.shouldCrouch && !controller.sprinting)
