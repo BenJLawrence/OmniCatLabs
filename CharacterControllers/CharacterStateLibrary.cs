@@ -81,7 +81,7 @@ namespace OmnicatLabs.CharacterControllers
                 //}
 
                 targetSpeed = controller.sprinting && controller.currentStamina > 0f ? controller.moveSpeed * controller.sprintMultiplier : controller.moveSpeed;
-                //Debug.Log(targetSpeed);
+                Debug.Log(targetSpeed);
                 if (!controller.onSlope)
                 {
                     rb.AddRelativeForce(controller.movementDir * targetSpeed * Time.deltaTime, ForceMode.Impulse);
@@ -111,8 +111,9 @@ namespace OmnicatLabs.CharacterControllers
                 lastSprinting = controller.sprinting;
                 if (controller.sprinting && controller.sprintUsesStamina)
                 {
-                    controller.currentStamina -= controller.staminaReductionRate * Time.deltaTime;
-                    controller.staminaSlider.value = controller.currentStamina;
+                    controller.ChangeStamina(-controller.staminaReductionRate * Time.deltaTime);
+                    //controller.currentStamina -= controller.staminaReductionRate * Time.deltaTime;
+                    //controller.staminaSlider.value = controller.currentStamina;
                     if (controller.currentStamina < 0f)
                     {
                         controller.currentStamina = 0f;

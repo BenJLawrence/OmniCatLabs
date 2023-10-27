@@ -230,7 +230,12 @@ namespace OmnicatLabs.CharacterControllers
         public void ChangeStamina(float value)
         {
             currentStamina += value;
-            staminaSlider.value = maxStamina;
+            if (currentStamina <= 0f)
+            {
+                sprinting = false;
+                currentStamina = 0f;
+            }
+            staminaSlider.value = currentStamina;
         }
 
         private void WallRunCheck()
@@ -311,9 +316,9 @@ namespace OmnicatLabs.CharacterControllers
 
         public void OnSprint(InputAction.CallbackContext context)
         {
-            if ((context.performed && movementDir.z > 0) || (context.performed && multiDirSprint))
+            if ((context.performed && movementDir.z > 0) || (context.performed && multiDirSprint) && currentStamina > 0f)
             {
-                sprinting = true;
+                sprinting = !sprinting;
             }
 
             if (context.canceled && slideKeyDown)
