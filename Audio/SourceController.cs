@@ -40,7 +40,7 @@ namespace OmnicatLabs.Audio
                     soundQueue.Dequeue();
                 if (soundQueue.Count == 0)
                 {
-                    //AudioManager.Instance.sources.Remove(assignedSource);
+                    AudioManager.Instance.sources.Remove(assignedSource);
                     //if (GetComponent<DestroyAtSoundEnd>())
                     //    Destroy(gameObject);
 
