@@ -229,7 +229,7 @@ namespace OmnicatLabs.CharacterControllers
 
         public void ChangeStamina(float value)
         {
-            currentStamina += value;
+            currentStamina = value;
             if (currentStamina <= 0f)
             {
                 sprinting = false;

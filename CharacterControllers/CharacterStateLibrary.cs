@@ -111,7 +111,7 @@ namespace OmnicatLabs.CharacterControllers
                 lastSprinting = controller.sprinting;
                 if (controller.sprinting && controller.sprintUsesStamina)
                 {
-                    controller.ChangeStamina(-controller.staminaReductionRate * Time.deltaTime);
+                    controller.ChangeStamina(controller.currentStamina - (controller.staminaReductionRate * Time.deltaTime));
                     //controller.currentStamina -= controller.staminaReductionRate * Time.deltaTime;
                     //controller.staminaSlider.value = controller.currentStamina;
                     if (controller.currentStamina < 0f)

@@ -71,8 +71,11 @@ namespace OmnicatLabs.Tween
             {
                 if (tween.timeElapsed < tween.tweenTime)
                 {
-                    cg.alpha = EasingFunctions.GetEasingFunction(easing).Invoke(0f, 1f, tween.timeElapsed / tween.tweenTime);
-                    tween.timeElapsed += Time.deltaTime;
+                    if (cg != null)
+                    {
+                        cg.alpha = EasingFunctions.GetEasingFunction(easing).Invoke(0f, 1f, tween.timeElapsed / tween.tweenTime);
+                        tween.timeElapsed += Time.deltaTime;
+                    }
                 }
                 else
                 {
