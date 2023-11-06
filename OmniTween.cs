@@ -4,11 +4,68 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using TMPro;
+using System.Linq;
 
 namespace OmnicatLabs.Tween
 {
     public static class TransformExtensions
     {
+        private static float ClosestRotation(float from, float to)
+        {
+            float minusWhole = 0 - (360 - to);
+            float plusWhole = 360 + to;
+            float toDiffAbs = Mathf.Abs(to - from);
+            float minusDiff = Mathf.Abs(minusWhole - from);
+            float plusDiff = Mathf.Abs(plusWhole - from);
+            if (toDiffAbs < minusDiff && toDiffAbs < plusDiff)
+            {
+                return to;
+            }
+            else
+            {
+                if (minusDiff < plusDiff)
+                {
+                    return minusWhole;
+                }
+                else
+                {
+                    return plusWhole;
+                }
+            }
+        }
+
+        public static void RealTweenYRot(this Transform transform, float toAngle, float amountOfTime, UnityAction onComplete = null, UnityAction onTick = null, EasingFunctions.Ease easing = EasingFunctions.Ease.Linear)
+        {
+            Transform starting = transform;
+            //Tween tween = OmniTween.tweens.Find(tween => tween.component == transform);
+            //if (tween != null && tween.component == transform)
+            //{
+            //    tween.completed = true;
+            //    Debug.Log(tween);
+            //}
+
+            OmniTween.tweens.Add(new Tween(amountOfTime, onComplete, transform, (tween) =>
+            {
+                
+
+                if (tween.timeElapsed < tween.tweenTime && !tween.completed)
+                {
+                    if (onTick != null)
+                        onTick.Invoke();
+
+                    var rotVec = new Vector3(transform.eulerAngles.x, toAngle, transform.eulerAngles.z);
+                    transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(rotVec), tween.timeElapsed / tween.tweenTime);
+
+                    tween.timeElapsed += Time.deltaTime;
+                }
+                else
+                {
+                    transform.rotation = Quaternion.Euler(transform.eulerAngles.x, toAngle, transform.eulerAngles.z);
+                    tween.completed = true;
+                }
+            }));
+        }
+
         public static void TweenYRot(this Transform transform, float speed, float amountOfTime, UnityAction onComplete = null, UnityAction onTick = null, EasingFunctions.Ease easing = EasingFunctions.Ease.Linear)
         {
             Transform starting = transform;
@@ -21,6 +78,7 @@ namespace OmnicatLabs.Tween
 
             OmniTween.tweens.Add(new Tween(amountOfTime, onComplete, transform, (tween) =>
             {
+
                 if (tween.timeElapsed < tween.tweenTime && !tween.completed)
                 {
                     if (onTick != null)
@@ -263,6 +321,18 @@ namespace OmnicatLabs.Tween
             //    }
             //}));
             //tweens.Add(new ValueTween(ref valueToChange, finalValue, amountOfTime, onComplete, easing));
+        }
+
+        public static void CancelTween<T>(T component) where T : Component
+        {
+            foreach (Tween tween in tweens)
+            {
+                if (tween.component == component)
+                {
+                    Debug.Log($"{tween.component} canceled");
+                    tween.completed = true;
+                }
+            }
         }
 
         private void Update()
