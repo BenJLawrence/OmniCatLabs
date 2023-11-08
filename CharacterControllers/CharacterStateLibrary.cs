@@ -81,7 +81,7 @@ namespace OmnicatLabs.CharacterControllers
                 //}
 
                 targetSpeed = controller.sprinting && controller.currentStamina > 0f ? controller.moveSpeed * controller.sprintMultiplier : controller.moveSpeed;
-                Debug.Log(targetSpeed);
+
                 if (!controller.onSlope)
                 {
                     rb.AddRelativeForce(controller.movementDir * targetSpeed * Time.deltaTime, ForceMode.Impulse);
@@ -139,7 +139,6 @@ namespace OmnicatLabs.CharacterControllers
                 if (controller.sprinting && controller.shouldCrouch && !controller.onSlope)
                 {
                     controller.ChangeState(CharacterStates.Slide);
-                    AudioManager.Instance.Play("PlayerSlide");
                 }
 
                 if (controller.shouldCrouch && !controller.sprinting)
@@ -556,6 +555,9 @@ namespace OmnicatLabs.CharacterControllers
             public override void OnStateExit<T>(StatefulObject<T> self)
             {
                 inCrouch = false;
+                controller.isCrouching = false;
+                controller.modelCollider.TweenHeight(originalColHeight, controller.toCrouchSpeed, () => { }, EasingFunctions.Ease.EaseOutQuart);
+                controller.camHolder.transform.TweenYPos(controller.originalHeight, controller.toCrouchSpeed, null, null, EasingFunctions.Ease.EaseOutQuart);
             }
 
             private Vector3 GetSlopeMoveDir()
@@ -651,7 +653,7 @@ namespace OmnicatLabs.CharacterControllers
                 base.OnStateEnter(self);
                 falloff = controller.slideSpeed;
                 slideDir = controller.transform.forward;
-
+                AudioManager.Instance.Play("PlayerSlide");
                 controller.modelCollider.TweenHeight(controller.crouchHeight, controller.slideTransitionSpeed, () => { }, EasingFunctions.Ease.EaseOutQuart);
                 controller.camHolder.transform.TweenYPos(controller.crouchHeight, controller.slideTransitionSpeed, () => { }, () => { rb.AddForce(Vector3.down * 1000f * Time.deltaTime, ForceMode.Force); }, EasingFunctions.Ease.EaseOutQuart);
                 //controller.mainCam.transform.TweenPosition(new Vector3(controller.mainCam.transform.position.x, controller.crouchHeight, controller.mainCam.transform.position.z), controller.toCrouchSpeed, () => { }, EasingFunctions.Ease.EaseOutQuart);
@@ -659,6 +661,7 @@ namespace OmnicatLabs.CharacterControllers
 
             public override void OnStateExit<T>(StatefulObject<T> self)
             {
+                AudioManager.Instance.Stop("PlayerSlide");
                 //Debug.Log("Called");
                 if (!goingToCrouch)
                 {

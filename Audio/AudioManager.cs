@@ -416,6 +416,23 @@ namespace OmnicatLabs.Audio
             return obj;
         }
 
+        public bool IsPlaying(string name)
+        {
+            var sound = sounds.Find(sound => sound.name == name);
+            //var source = sources.Find(source => source.clip.name == sound.clip.name);
+            foreach (var source in sources)
+            {
+                if (source.clip != null)
+                {
+                    if (source.clip.name == sound.clip.name)
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
         #region Stop Methods
         /// <summary>
         /// Stops the playback of the specified track <br /> <br />
@@ -426,8 +443,18 @@ namespace OmnicatLabs.Audio
         public void Stop(string name)
         {
             var sound = sounds.Find(sound => sound.name == name);
-            var source = sources.Find(source => source.clip.name == sound.clip.name);
-            source.Stop();
+            //var source = sources.Find(source => source.clip.name == sound.clip.name);
+
+            foreach(var source in sources)
+            {
+                if (source.clip != null)
+                {
+                    if (source.clip.name == sound.clip.name)
+                    {
+                        source.Stop();
+                    }
+                }
+            }
         }
 
         /// <summary>

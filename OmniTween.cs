@@ -37,6 +37,9 @@ namespace OmnicatLabs.Tween
         public static void RealTweenYRot(this Transform transform, float toAngle, float amountOfTime, UnityAction onComplete = null, UnityAction onTick = null, EasingFunctions.Ease easing = EasingFunctions.Ease.Linear)
         {
             Transform starting = transform;
+            float startingY = transform.localEulerAngles.y;
+            
+
             //Tween tween = OmniTween.tweens.Find(tween => tween.component == transform);
             //if (tween != null && tween.component == transform)
             //{
@@ -46,21 +49,27 @@ namespace OmnicatLabs.Tween
 
             OmniTween.tweens.Add(new Tween(amountOfTime, onComplete, transform, (tween) =>
             {
-                
-
                 if (tween.timeElapsed < tween.tweenTime && !tween.completed)
                 {
                     if (onTick != null)
                         onTick.Invoke();
+                    //transform.localPosition = new Vector3(transform.localPosition.x, EasingFunctions.GetEasingFunction(easing).Invoke(startingY, toAngle, tween.timeElapsed / tween.tweenTime), transform.localPosition.z);
 
-                    var rotVec = new Vector3(transform.eulerAngles.x, toAngle, transform.eulerAngles.z);
-                    transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(rotVec), tween.timeElapsed / tween.tweenTime);
+                    //rotation = 
+                    //transform.localRotation = Quaternion.Slerp(starting.localRotation, Quaternion.Euler(new Vector3(transform.localEulerAngles.x, ClosestRotation(transform.localEulerAngles.y, toAngle), transform.localEulerAngles.z)), tween.timeElapsed / tween.tweenTime);
 
+                    //float adjustedRotation = ClosestRotation(starting.localEulerAngles.y, toAngle);
+                    //var newRot = EasingFunctions.GetEasingFunction(easing).Invoke(starting.localEulerAngles.y, adjustedRotation, tween.timeElapsed / tween.tweenTime);
+
+                    //var rotVec = new Vector3(transform.localEulerAngles.x, newRot, transform.localEulerAngles.z);
+
+                    //transform.localRotation = Quaternion.Euler(rotVec); //Quaternion.Lerp(transform.localRotation, Quaternion.Euler(rotVec), tween.timeElapsed / tween.tweenTime);
+                    transform.localRotation = Quaternion.Euler(new Vector3(transform.localEulerAngles.x, EasingFunctions.GetEasingFunction(easing).Invoke(startingY, ClosestRotation(startingY, toAngle), tween.timeElapsed / tween.tweenTime), transform.localEulerAngles.z));
                     tween.timeElapsed += Time.deltaTime;
                 }
                 else
                 {
-                    transform.rotation = Quaternion.Euler(transform.eulerAngles.x, toAngle, transform.eulerAngles.z);
+                    transform.localRotation = Quaternion.Euler(transform.localEulerAngles.x, toAngle, transform.localEulerAngles.z);
                     tween.completed = true;
                 }
             }));
@@ -137,7 +146,8 @@ namespace OmnicatLabs.Tween
                 }
                 else
                 {
-                    cg.alpha = 1f;
+                    if (cg != null)
+                        cg.alpha = 1f;
                     tween.completed = true;
                 }
             }));
@@ -253,6 +263,7 @@ namespace OmnicatLabs.Tween
         public float timeElapsed = 0f;
         public UnityAction<Tween> tweenAction;
         public bool completed = false;
+        public bool markedForRemove = false;
         public UnityAction onComplete;
         public virtual void DoTween()
         {
@@ -323,14 +334,14 @@ namespace OmnicatLabs.Tween
             //tweens.Add(new ValueTween(ref valueToChange, finalValue, amountOfTime, onComplete, easing));
         }
 
-        public static void CancelTween<T>(T component) where T : Component
+        public static void CancelTween<T>(T component, bool callCompleteCallbacks = false) where T : Component
         {
             foreach (Tween tween in tweens)
             {
                 if (tween.component == component)
                 {
-                    Debug.Log($"{tween.component} canceled");
-                    tween.completed = true;
+                    if (callCompleteCallbacks && tween.onComplete != null) tween.onComplete.Invoke();
+                    tween.markedForRemove = true;
                 }
             }
         }
@@ -339,14 +350,16 @@ namespace OmnicatLabs.Tween
         {
             for (int i = 0; i < tweens.Count; i++)
             {
-                tweens[i].DoTween();
+                if (!tweens[i].markedForRemove && !tweens[i].completed)
+                    tweens[i].DoTween();
+
                 if (tweens[i].completed && tweens[i].onComplete != null)
                 {
                     tweens[i].onComplete.Invoke();
                 }
             }
 
-            tweens.RemoveAll(tween => tween.completed);
+            tweens.RemoveAll(tween => tween.completed || tween.markedForRemove);
         }
     }
 }
