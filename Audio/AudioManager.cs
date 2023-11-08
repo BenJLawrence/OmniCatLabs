@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.Events;
+using UnityEngine.UI;
 
 /*TODO
  * Make the functions give the sources the references to filters if the sound has them. Right now they will always get them manually
@@ -102,8 +103,20 @@ namespace OmnicatLabs.Audio
     {
         public static AudioManager Instance;
         public List<Sound> sounds;
+
+        /*************** Darrel's Edits Delete if Needed ********************/
+        public List<Sound> ambientSounds;
+        public List<Sound> musicSounds;
+        public List<Sound> sfxSounds;
+        public float defaultVolume = 0.5f;
+        /********************************************************************/
+
         public AudioMixer mixer;
         public int poolSize = 50;
+        public Slider masterSlider;
+        public Slider musicSlider;
+        public Slider ambientSlider;
+        public Slider sfxSlider;
 
         [HideInInspector]
         public List<AudioSource> sources = new List<AudioSource>();
@@ -141,6 +154,12 @@ namespace OmnicatLabs.Audio
                     Play(sound.name, SoundMode.Simultaneous);
                 }
             }
+
+            /**************** Darrel's Edits Delete if needed ************/
+            //LinkSliderToVolume(ambientSounds, ambientSlider, defaultVolume);
+            //LinkSliderToVolume(musicSounds, musicSlider, defaultVolume);
+            LinkSliderToVolume(sfxSounds, sfxSlider, defaultVolume);
+            /*************************************************************/
         }
 
         public void Play(string name, SoundMode mode = SoundMode.Simultaneous)
@@ -592,6 +611,38 @@ namespace OmnicatLabs.Audio
             source.maxDistance = sound.maxDistance;
             source.outputAudioMixerGroup = sound.outputAudioMixerGroup;
         }
+
+        //*******************************************//
+        // Darrel Edits
+        public void LinkSliderToVolume(List<Sound> sounds, Slider slider, float initialVolume)
+        {
+            // Ensure the volume slider is not null
+            if (slider != null && sounds != null && sounds.Count > 0)
+            {
+                // Set the initial volume of sounds to the default value
+                foreach (var sound in sounds)
+                {
+                    sound.volume = initialVolume;
+                }
+
+                // Set the slider value to the inital volume
+                slider.value = initialVolume;
+
+                // Add a listener to update the volume when the slider value chagnes
+                slider.onValueChanged.AddListener((float volume) => {
+                    foreach (var sound in sounds)
+                    {
+                        sound.volume = volume;
+                    }
+                });
+            }
+
+            else
+            {
+                Debug.LogError("Slider or sounds list is null or empty. Cannot link volume control.");
+            }
+        }
+        //*********************************************//
 
         public void SetupReverbFilter(AudioReverbFilter filter, Reverb reverb)
         {
