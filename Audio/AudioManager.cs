@@ -639,7 +639,7 @@ namespace OmnicatLabs.Audio
 
             else
             {
-                Debug.LogError("Slider or sounds list is null or empty. Cannot link volume control.");
+                //.Debug.LogError("Slider or sounds list is null or empty. Cannot link volume control.");
             }
         }
         //*********************************************//

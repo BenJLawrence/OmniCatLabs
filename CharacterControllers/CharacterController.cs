@@ -59,6 +59,7 @@ namespace OmnicatLabs.CharacterControllers
         public float staminaReductionRate = 1f;
         public bool sprintUsesStamina = false;
         public float footstepInterval = 5f;
+        public float sprintStepInterval = .3f;
 
         [Header("Ground Checks")]
         public GroundCheckType groundCheckType;
@@ -215,7 +216,7 @@ namespace OmnicatLabs.CharacterControllers
             SlopeCheck();
             //WallCheck();
             WallRunCheck();
-            //Debug.Log(state);
+            Debug.Log(state);
             //Debug.Log(isGrounded);
             //Debug.Log(state.ToString() + isCrouching.ToString());
             //Debug.Log(isCrouching);

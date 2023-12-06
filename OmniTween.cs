@@ -53,17 +53,7 @@ namespace OmnicatLabs.Tween
                 {
                     if (onTick != null)
                         onTick.Invoke();
-                    //transform.localPosition = new Vector3(transform.localPosition.x, EasingFunctions.GetEasingFunction(easing).Invoke(startingY, toAngle, tween.timeElapsed / tween.tweenTime), transform.localPosition.z);
 
-                    //rotation = 
-                    //transform.localRotation = Quaternion.Slerp(starting.localRotation, Quaternion.Euler(new Vector3(transform.localEulerAngles.x, ClosestRotation(transform.localEulerAngles.y, toAngle), transform.localEulerAngles.z)), tween.timeElapsed / tween.tweenTime);
-
-                    //float adjustedRotation = ClosestRotation(starting.localEulerAngles.y, toAngle);
-                    //var newRot = EasingFunctions.GetEasingFunction(easing).Invoke(starting.localEulerAngles.y, adjustedRotation, tween.timeElapsed / tween.tweenTime);
-
-                    //var rotVec = new Vector3(transform.localEulerAngles.x, newRot, transform.localEulerAngles.z);
-
-                    //transform.localRotation = Quaternion.Euler(rotVec); //Quaternion.Lerp(transform.localRotation, Quaternion.Euler(rotVec), tween.timeElapsed / tween.tweenTime);
                     transform.localRotation = Quaternion.Euler(new Vector3(transform.localEulerAngles.x, EasingFunctions.GetEasingFunction(easing).Invoke(startingY, ClosestRotation(startingY, toAngle), tween.timeElapsed / tween.tweenTime), transform.localEulerAngles.z));
                     tween.timeElapsed += Time.deltaTime;
                 }
@@ -265,6 +255,8 @@ namespace OmnicatLabs.Tween
         public bool completed = false;
         public bool markedForRemove = false;
         public UnityAction onComplete;
+        public bool isPaused = false;
+
         public virtual void DoTween()
         {
             tweenAction.Invoke(this);
@@ -346,11 +338,33 @@ namespace OmnicatLabs.Tween
             }
         }
 
+        public static void PauseTween<T>(T component) where T : Component
+        {
+            foreach (Tween tween in tweens)
+            {
+                if (tween.component == component)
+                {
+                    tween.isPaused = true;
+                }
+            }
+        }
+
+        public static void Resume<T>(T component) where T : Component
+        {
+            foreach (Tween tween in tweens)
+            {
+                if (tween.component == component)
+                {
+                    tween.isPaused = false;
+                }
+            }
+        }
+
         private void Update()
         {
             for (int i = 0; i < tweens.Count; i++)
             {
-                if (!tweens[i].markedForRemove && !tweens[i].completed)
+                if (!tweens[i].markedForRemove && !tweens[i].completed && !tweens[i].isPaused)
                     tweens[i].DoTween();
 
                 if (tweens[i].completed && tweens[i].onComplete != null)

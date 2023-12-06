@@ -1,5 +1,5 @@
 using System;
-using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using OmnicatLabs.StatefulObject;
 using OmnicatLabs.Tween;
@@ -42,6 +42,7 @@ namespace OmnicatLabs.CharacterControllers
         {
             private Timer timer;
             private float targetSpeed;
+            private string[] footsteps = new string[] { "Footstep", "Footstep2", "Footstep3", "Footstep4" };
             public override void OnStateInit<T>(StatefulObject<T> self)
             {
                 base.OnStateInit(self);
@@ -49,22 +50,19 @@ namespace OmnicatLabs.CharacterControllers
 
             public override void OnStateEnter<T>(StatefulObject<T> self)
             {
-                /*List<string> footsteps = new List<string>();
-                footsteps.Add("Footstep");
-                footsteps.Add("Footstep2");
-                footsteps.Add("Footstep3");
-                footsteps.Add("Footstep4");*/
-
                 base.OnStateEnter(self);
-                //AudioManager.Instance.Play("Footstep");
 
-                //TimerManager.Instance.CreateTimer(controller.footstepInterval, () => AudioManager.Instance.Play("Footstep"), out timer, true);
+                if (!AudioManager.Instance.IsPlaying("Footstep") && !AudioManager.Instance.IsPlaying("Footstep2") && !AudioManager.Instance.IsPlaying("Footstep3") && !AudioManager.Instance.IsPlaying("Footstep4"))
+                {
+                    AudioManager.Instance.Play(footsteps[UnityEngine.Random.Range(0, footsteps.Length)]);
+                }
+
+                TimerManager.Instance.CreateTimer(controller.footstepInterval, () => AudioManager.Instance.Play(footsteps[UnityEngine.Random.Range(0, footsteps.Length)]), out timer, true);
             }
 
             public override void OnStateExit<T>(StatefulObject<T> self)
             {
-                
-                    //TimerManager.Instance.Stop(timer);
+                TimerManager.Instance.Stop(timer);
             }
 
             public override void OnStateFixedUpdate<T>(StatefulObject<T> self)
@@ -108,6 +106,9 @@ namespace OmnicatLabs.CharacterControllers
 
             public override void OnStateUpdate<T>(StatefulObject<T> self)
             {
+                if (timer != null)
+                    timer.amountOfTime = controller.sprinting ? controller.sprintStepInterval : controller.footstepInterval;
+
                 lastSprinting = controller.sprinting;
                 if (controller.sprinting && controller.sprintUsesStamina)
                 {
