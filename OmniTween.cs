@@ -65,6 +65,37 @@ namespace OmnicatLabs.Tween
             }));
         }
 
+        public static void RealTweenZRot(this Transform transform, float toAngle, float amountOfTime, UnityAction onComplete = null, UnityAction onTick = null, EasingFunctions.Ease easing = EasingFunctions.Ease.Linear)
+        {
+            Transform starting = transform;
+            float startingZ = transform.localEulerAngles.z;
+
+
+            //Tween tween = OmniTween.tweens.Find(tween => tween.component == transform);
+            //if (tween != null && tween.component == transform)
+            //{
+            //    tween.completed = true;
+            //    Debug.Log(tween);
+            //}
+
+            OmniTween.tweens.Add(new Tween(amountOfTime, onComplete, transform, (tween) =>
+            {
+                if (tween.timeElapsed < tween.tweenTime && !tween.completed)
+                {
+                    if (onTick != null)
+                        onTick.Invoke();
+
+                    transform.localRotation = Quaternion.Euler(new Vector3(transform.localEulerAngles.x, transform.localEulerAngles.y, EasingFunctions.GetEasingFunction(easing).Invoke(startingZ, ClosestRotation(startingZ, toAngle), tween.timeElapsed / tween.tweenTime)));
+                    tween.timeElapsed += Time.deltaTime;
+                }
+                else
+                {
+                    transform.localRotation = Quaternion.Euler(transform.localEulerAngles.x, transform.localEulerAngles.y, toAngle);
+                    tween.completed = true;
+                }
+            }));
+        }
+
         public static void TweenYRot(this Transform transform, float speed, float amountOfTime, UnityAction onComplete = null, UnityAction onTick = null, EasingFunctions.Ease easing = EasingFunctions.Ease.Linear)
         {
             Transform starting = transform;
