@@ -182,11 +182,11 @@ namespace OmnicatLabs.CharacterControllers
             {
                 Instance = this;
             }
+            rb = GetComponent<Rigidbody>();
         }
 
         private void Start()
         {
-            rb = GetComponent<Rigidbody>();
             camHolder = mainCam.transform.parent;
             startingCamHeight = camHolder.transform.localPosition.y;
             if (staminaSlider == null)
