@@ -57,12 +57,17 @@ namespace OmnicatLabs.CharacterControllers
                     AudioManager.Instance.Play(footsteps[UnityEngine.Random.Range(0, footsteps.Length)]);
                 }
 
+                if (ArmController.Instance.anim != null)
+                ArmController.Instance.anim.SetBool("Walking", true);
+
                 TimerManager.Instance.CreateTimer(controller.footstepInterval, () => AudioManager.Instance.Play(footsteps[UnityEngine.Random.Range(0, footsteps.Length)]), out timer, true);
             }
 
             public override void OnStateExit<T>(StatefulObject<T> self)
             {
                 TimerManager.Instance.Stop(timer);
+                if (ArmController.Instance.anim != null)
+                    ArmController.Instance.anim.SetBool("Walking", false);
             }
 
             public override void OnStateFixedUpdate<T>(StatefulObject<T> self)

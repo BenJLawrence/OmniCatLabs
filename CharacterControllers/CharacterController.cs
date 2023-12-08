@@ -317,7 +317,7 @@ namespace OmnicatLabs.CharacterControllers
 
         public void OnSprint(InputAction.CallbackContext context)
         {
-            if (context.performed && !sprinting && !Audio.AudioManager.Instance.IsPlaying("PlayerBreath"))
+            if (context.performed && !sprinting && !Audio.AudioManager.Instance.IsPlaying("PlayerBreath") && currentStamina > 0f)
             {
                 Audio.AudioManager.Instance.Play("PlayerBreath", Audio.SoundMode.Instant);
             }
