@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using TMPro;
 using System.Linq;
+using Cinemachine;
 
 namespace OmnicatLabs.Tween
 {
@@ -34,18 +35,10 @@ namespace OmnicatLabs.Tween
             }
         }
 
-        public static void RealTweenYRot(this Transform transform, float toAngle, float amountOfTime, UnityAction onComplete = null, UnityAction onTick = null, EasingFunctions.Ease easing = EasingFunctions.Ease.Linear)
+        public static void TweenLocalYRotation(this Transform transform, float toAngle, float amountOfTime, UnityAction onComplete = null, UnityAction onTick = null, EasingFunctions.Ease easing = EasingFunctions.Ease.Linear)
         {
             Transform starting = transform;
             float startingY = transform.localEulerAngles.y;
-            
-
-            //Tween tween = OmniTween.tweens.Find(tween => tween.component == transform);
-            //if (tween != null && tween.component == transform)
-            //{
-            //    tween.completed = true;
-            //    Debug.Log(tween);
-            //}
 
             OmniTween.tweens.Add(new Tween(amountOfTime, onComplete, transform, (tween) =>
             {
@@ -65,18 +58,10 @@ namespace OmnicatLabs.Tween
             }));
         }
 
-        public static void RealTweenZRot(this Transform transform, float toAngle, float amountOfTime, UnityAction onComplete = null, UnityAction onTick = null, EasingFunctions.Ease easing = EasingFunctions.Ease.Linear)
+        public static void TweenLocalZRotation(this Transform transform, float toAngle, float amountOfTime, UnityAction onComplete = null, UnityAction onTick = null, EasingFunctions.Ease easing = EasingFunctions.Ease.Linear)
         {
             Transform starting = transform;
             float startingZ = transform.localEulerAngles.z;
-
-
-            //Tween tween = OmniTween.tweens.Find(tween => tween.component == transform);
-            //if (tween != null && tween.component == transform)
-            //{
-            //    tween.completed = true;
-            //    Debug.Log(tween);
-            //}
 
             OmniTween.tweens.Add(new Tween(amountOfTime, onComplete, transform, (tween) =>
             {
@@ -96,58 +81,70 @@ namespace OmnicatLabs.Tween
             }));
         }
 
-        public static void TweenYRot(this Transform transform, float speed, float amountOfTime, UnityAction onComplete = null, UnityAction onTick = null, EasingFunctions.Ease easing = EasingFunctions.Ease.Linear)
+        public static void TweenFOV(this Camera camera, float newFOV, float amountOfTime, UnityAction onComplete = null, EasingFunctions.Ease easing = EasingFunctions.Ease.Linear)
         {
-            Transform starting = transform;
-            //Tween tween = OmniTween.tweens.Find(tween => tween.component == transform);
-            //if (tween != null && tween.component == transform)
-            //{
-            //    tween.completed = true;
-            //    Debug.Log(tween);
-            //}
+            float startingFOV = camera.fieldOfView;
 
-            OmniTween.tweens.Add(new Tween(amountOfTime, onComplete, transform, (tween) =>
+            OmniTween.tweens.Add(new Tween(amountOfTime, onComplete, camera, (tween) =>
             {
-
-                if (tween.timeElapsed < tween.tweenTime && !tween.completed)
+                if (tween.timeElapsed < tween.tweenTime)
                 {
-                    if (onTick != null)
-                        onTick.Invoke();
-                    transform.Rotate(speed * Vector3.up * Time.deltaTime);
-                    //transform.position = new Vector3(transform.position.x, EasingFunctions.GetEasingFunction(easing).Invoke(startingY, newY, tween.timeElapsed / tween.tweenTime), transform.position.z);
-                    tween.timeElapsed += Time.deltaTime;
+                    if (camera != null)
+                    {
+                        camera.fieldOfView = EasingFunctions.GetEasingFunction(easing).Invoke(startingFOV, newFOV, tween.timeElapsed / tween.tweenTime);
+                        tween.timeElapsed += Time.deltaTime;
+                    }
                 }
                 else
                 {
-                    //transform.position = new Vector3(transform.position.x, newY, transform.position.z);
+                    if (camera != null)
+                        camera.fieldOfView = newFOV;
                     tween.completed = true;
                 }
             }));
         }
 
-        public static void TweenZRot(this Transform transform, float speed, float amountOfTime, UnityAction onComplete = null, UnityAction onTick = null, EasingFunctions.Ease easing = EasingFunctions.Ease.Linear)
+        public static void TweenFOV(this CinemachineVirtualCamera camera, float newFOV, float amountOfTime, UnityAction onComplete = null, EasingFunctions.Ease easing = EasingFunctions.Ease.Linear)
         {
-            Transform starting = transform;
-            //Tween tween = OmniTween.tweens.Find(tween => tween.component == transform);
-            //if (tween != null && tween.component == transform)
-            //{
-            //    tween.completed = true;
-            //    Debug.Log(tween);
-            //}
+            float startingFOV = camera.m_Lens.FieldOfView;
 
-            OmniTween.tweens.Add(new Tween(amountOfTime, onComplete, transform, (tween) =>
+            OmniTween.tweens.Add(new Tween(amountOfTime, onComplete, camera, (tween) =>
             {
-                if (tween.timeElapsed < tween.tweenTime && !tween.completed)
+                if (tween.timeElapsed < tween.tweenTime)
                 {
-                    if (onTick != null)
-                        onTick.Invoke();
-                    transform.Rotate(speed * Vector3.forward * Time.deltaTime);
-                    //transform.position = new Vector3(transform.position.x, EasingFunctions.GetEasingFunction(easing).Invoke(startingY, newY, tween.timeElapsed / tween.tweenTime), transform.position.z);
-                    tween.timeElapsed += Time.deltaTime;
+                    if (camera != null)
+                    {
+                        camera.m_Lens.FieldOfView = EasingFunctions.GetEasingFunction(easing).Invoke(startingFOV, newFOV, tween.timeElapsed / tween.tweenTime);
+                        tween.timeElapsed += Time.deltaTime;
+                    }
                 }
                 else
                 {
-                    //transform.position = new Vector3(transform.position.x, newY, transform.position.z);
+                    if (camera != null)
+                        camera.m_Lens.FieldOfView = newFOV;
+                    tween.completed = true;
+                }
+            }));
+        }
+
+        public static void TweenDutch(this CinemachineVirtualCamera camera, float newDutch, float amountOfTime, UnityAction onComplete = null, EasingFunctions.Ease easing = EasingFunctions.Ease.Linear)
+        {
+            float startingDutch = camera.m_Lens.Dutch;
+
+            OmniTween.tweens.Add(new Tween(amountOfTime, onComplete, camera, (tween) =>
+            {
+                if (tween.timeElapsed < tween.tweenTime)
+                {
+                    if (camera != null)
+                    {
+                        camera.m_Lens.Dutch = EasingFunctions.GetEasingFunction(easing).Invoke(startingDutch, newDutch, tween.timeElapsed / tween.tweenTime);
+                        tween.timeElapsed += Time.deltaTime;
+                    }
+                }
+                else
+                {
+                    if (camera != null)
+                        camera.m_Lens.Dutch = newDutch;
                     tween.completed = true;
                 }
             }));

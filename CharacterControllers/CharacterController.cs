@@ -4,6 +4,7 @@ using UnityEngine.Events;
 using System;
 using OmnicatLabs.StatefulObject;
 using UnityEngine.UI;
+using Cinemachine;
 
 namespace OmnicatLabs.CharacterControllers
 {
@@ -41,6 +42,7 @@ namespace OmnicatLabs.CharacterControllers
         public static CharacterController Instance;
 
         public Camera mainCam;
+        public CinemachineVirtualCamera vCam;
         public CapsuleCollider modelCollider;
 
         [Header("General")]
@@ -138,6 +140,14 @@ namespace OmnicatLabs.CharacterControllers
         public LayerMask runnableLayers;
         public float wallRunSpeed = 500f;
         public float maxWallRunTime = 3f;
+        public float wallJumpForce = 10f;
+        public float wallJumpSideForce = 10f;
+        public float wallFallForce = 10f;
+        public float wallRunFOV = 80f;
+        [Tooltip("Degrees of rotation. +/- depending on orientation")]
+        public float wallRunCameraTilt = 15f;
+        [Tooltip("Minimum time required to be on the wall before you can jump")]
+        public float minTimeToWallJump = .5f;
 
         [Header("UI")]
         public Slider staminaSlider;
@@ -174,6 +184,7 @@ namespace OmnicatLabs.CharacterControllers
         public float startingCamHeight;
         [HideInInspector]
         public float savedStamina = 0f;
+        internal bool canWallRun = true;
 
         protected override void Awake()
         {
@@ -191,7 +202,7 @@ namespace OmnicatLabs.CharacterControllers
             startingCamHeight = camHolder.transform.localPosition.y;
             if (staminaSlider == null)
             {
-                Debug.LogError("The slider for stamina has not been set in the inspector");
+                Debug.Log("The slider for stamina has not been set in the inspector");
             }
             else
             {
@@ -214,7 +225,7 @@ namespace OmnicatLabs.CharacterControllers
             base.Update();
             GroundCheck();
             SlopeCheck();
-            //WallCheck();
+            WallRunCheck();
             WallRunCheck();
             Debug.Log(state);
             //Debug.Log(isGrounded);
@@ -236,13 +247,14 @@ namespace OmnicatLabs.CharacterControllers
                 sprinting = false;
                 currentStamina = 0f;
             }
-            staminaSlider.value = currentStamina;
+            if (staminaSlider != null)
+                staminaSlider.value = currentStamina;
         }
 
         private void WallRunCheck()
         {
-            wallRight = Physics.Raycast(transform.position, transform.right, out rightWallHit, wallCheckDistance, runnableLayers);
-            wallLeft = Physics.Raycast(transform.position, -transform.right, out leftWallHit, wallCheckDistance, runnableLayers);
+            wallRight = Physics.Raycast(transform.position + modelCollider.center, transform.right, out rightWallHit, wallCheckDistance, runnableLayers);
+            wallLeft = Physics.Raycast(transform.position + modelCollider.center, -transform.right, out leftWallHit, wallCheckDistance, runnableLayers);
         }
 
         private void WallCheck()
@@ -298,6 +310,7 @@ namespace OmnicatLabs.CharacterControllers
             {
                 onGrounded.Invoke();
                 currentJumpAmount = 0;
+                canWallRun = true;
             }
 
             if (!isGrounded && !onSlope && !wallRunning)
@@ -488,6 +501,10 @@ namespace OmnicatLabs.CharacterControllers
                 Gizmos.color = Color.cyan;
                 Gizmos.DrawRay(slopeCheckPoint.position, Vector3.down * slopeCheckDistance);
             }
+
+            Gizmos.color = Color.red;
+            Gizmos.DrawRay(transform.position + modelCollider.center, transform.right * wallCheckDistance);
+            Gizmos.DrawRay(transform.position + modelCollider.center, -transform.right * wallCheckDistance);
         }
     }
 }

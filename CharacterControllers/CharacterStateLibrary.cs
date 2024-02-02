@@ -302,6 +302,13 @@ namespace OmnicatLabs.CharacterControllers
 
             public override void OnStateUpdate<T>(StatefulObject<T> self)
             {
+                //Wall Running
+                if ((controller.wallLeft || controller.wallRight) && controller.movementDir.z > 0 && controller.canWallRun)
+                {
+                    controller.ChangeState(CharacterStates.WallRun);
+                }
+
+
                 //Velocity cap since when adding our in air force we could theoretically ramp speed forever
                 if (new Vector3(rb.velocity.x, 0f, rb.velocity.z).magnitude > controller.maxInAirSpeed)
                 {
@@ -313,11 +320,6 @@ namespace OmnicatLabs.CharacterControllers
                 if (controller.onSlope)
                 {
                     controller.ChangeState(CharacterStates.Idle);
-                }
-
-                if ((controller.wallLeft || controller.wallRight) && controller.movementDir == Vector3.forward && !controller.isGrounded)
-                {
-                    controller.ChangeState(CharacterStates.WallRun);
                 }
             }
 
@@ -737,6 +739,10 @@ namespace OmnicatLabs.CharacterControllers
         {
             private Vector3 wallNormal;
             private Vector3 wallForward;
+            private float reduction;
+            private Timer timer;
+            private float originalFOV;
+            private float originalZTilt;
 
             public override void OnStateInit<T>(StatefulObject<T> self)
             {
@@ -746,35 +752,89 @@ namespace OmnicatLabs.CharacterControllers
             public override void OnStateEnter<T>(StatefulObject<T> self)
             {
                 base.OnStateEnter(self);
-                wallNormal = controller.wallRight ? controller.rightWallHit.normal : controller.leftWallHit.normal;
-                wallForward = -Vector3.Cross(wallNormal, controller.transform.up);
-                rb.useGravity = false;
-                rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
+
+                controller.onAirJump.AddListener(WallJump);
+                originalFOV = controller.vCam.m_Lens.FieldOfView;
+                originalZTilt = controller.vCam.m_Lens.Dutch;
+
+
                 controller.wallRunning = true;
+                controller.canWallRun = false;
+                TimerManager.Instance.CreateTimer(controller.maxWallRunTime, () => controller.ChangeState(CharacterStates.Falling), out timer);
+
+                controller.camHolder.GetComponent<CameraEffects>().AdjustFOV(controller.wallRunFOV);
+                if (controller.wallLeft) controller.camHolder.GetComponent<CameraEffects>().AdjustTilt(-controller.wallRunCameraTilt);
+                else controller.camHolder.GetComponent<CameraEffects>().AdjustTilt(controller.wallRunCameraTilt);
             }
 
             public override void OnStateExit<T>(StatefulObject<T> self)
             {
-                //rb.useGravity = true;
                 controller.wallRunning = false;
-                Debug.Log("Exited");
+                controller.onAirJump.RemoveListener(WallJump);
+                TimerManager.Instance.Stop(timer);
+                controller.camHolder.GetComponent<CameraEffects>().AdjustFOV(originalFOV);
+                controller.camHolder.GetComponent<CameraEffects>().AdjustTilt(originalZTilt);
             }
 
             public override void OnStateFixedUpdate<T>(StatefulObject<T> self)
             {
+                //The force along the wall
                 rb.AddForce(wallForward * controller.wallRunSpeed, ForceMode.Force);
+
+                //Calculate direction toward wall and apply small force to keep attached
+                if (!(controller.wallLeft && controller.movementDir.x > 0) && !(controller.wallRight && controller.movementDir.x < 0))
+                    rb.AddForce(-wallNormal * 100f, ForceMode.Force);
+
+                //Downward force while running
+                rb.AddForce(Vector3.down * controller.wallFallForce, ForceMode.Force);
+
+                //Checks for a movmement based escape from the state
+                MovementCancelCheck();
             }
 
             public override void OnStateUpdate<T>(StatefulObject<T> self)
             {
-                if (!controller.wallLeft || !controller.wallRight)
-                {
-                    controller.ChangeState(CharacterStates.Falling);
-                }
+                wallNormal = controller.wallRight ? controller.rightWallHit.normal : controller.leftWallHit.normal;
+                wallForward = -Vector3.Cross(wallNormal, controller.transform.up);
 
+                //Invert wallForward depending on what direction we approach the wall
+                if ((controller.transform.forward - wallForward).magnitude > (controller.transform.forward - -wallForward).magnitude)
+                    wallForward = -wallForward;
+
+                //Caps movement velocity on the wall
                 if (rb.velocity.magnitude > 5f)
                 {
                     rb.velocity = rb.velocity.normalized * 5f;
+                }
+
+                CancelCheck();
+            }
+
+            private void MovementCancelCheck()
+            {
+                if ((controller.wallLeft && controller.movementDir.x > 0) || (controller.wallRight && controller.movementDir.x < 0))
+                {
+                    rb.AddRelativeForce(controller.movementDir * 100f, ForceMode.Force);
+                    controller.ChangeState(CharacterStates.Falling);
+                }
+            }
+
+            private void WallJump()
+            {
+                if ((timer.amountOfTime - timer.timeRemaining) > controller.minTimeToWallJump)
+                {
+                    Vector3 forceToApply = controller.transform.up * controller.wallJumpForce + wallNormal * controller.wallJumpSideForce;
+                    rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.y);
+                    rb.AddForce(forceToApply, ForceMode.Impulse);
+                    controller.ChangeState(CharacterStates.Falling);
+                }
+            }
+
+            private void CancelCheck()
+            {
+                if (controller.movementDir.z <= 0 || (!controller.wallLeft && !controller.wallRight))
+                {
+                    controller.ChangeState(CharacterStates.Falling);
                 }
             }
         }
