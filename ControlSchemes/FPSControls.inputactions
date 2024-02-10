@@ -61,9 +61,9 @@
                 },
                 {
                     "name": "Swap",
-                    "type": "Button",
+                    "type": "PassThrough",
                     "id": "fdac6d26-f7c5-4617-afc2-5d5915e33db0",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
@@ -357,37 +357,26 @@
                     "isPartOfComposite": false
                 },
                 {
-                    "name": "1D Axis",
-                    "id": "e0d8db3a-deaa-4b15-b16e-ba38e891ef97",
-                    "path": "1DAxis",
+                    "name": "",
+                    "id": "7c489e1a-ff77-4861-804d-b1ce5a36bfed",
+                    "path": "<Mouse>/scroll/y",
                     "interactions": "",
                     "processors": "",
-                    "groups": "",
+                    "groups": "FPS MNK Controls",
                     "action": "Swap",
-                    "isComposite": true,
+                    "isComposite": false,
                     "isPartOfComposite": false
                 },
                 {
-                    "name": "negative",
-                    "id": "e1bc7bf3-6d69-4d65-87e7-6fde71d94cc8",
-                    "path": "<Mouse>/scroll/down",
+                    "name": "",
+                    "id": "b45f1fd3-355c-4c98-a3b8-149bb579f14a",
+                    "path": "<Gamepad>/buttonNorth",
                     "interactions": "",
                     "processors": "",
-                    "groups": "FPS MNK Controls",
+                    "groups": "Controller",
                     "action": "Swap",
                     "isComposite": false,
-                    "isPartOfComposite": true
-                },
-                {
-                    "name": "positive",
-                    "id": "b815ac46-4ea2-4440-aa2a-9e9b2a984c90",
-                    "path": "<Mouse>/scroll/up",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "FPS MNK Controls",
-                    "action": "Swap",
-                    "isComposite": false,
-                    "isPartOfComposite": true
+                    "isPartOfComposite": false
                 }
             ]
         }
