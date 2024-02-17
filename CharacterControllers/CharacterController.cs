@@ -23,6 +23,7 @@ namespace OmnicatLabs.CharacterControllers
         public static readonly State<CharacterState> CrouchWalk = new CharacterStateLibrary.CrouchWalkState(crouchTriggers);
         public static readonly State<CharacterState> Slide = new CharacterStateLibrary.SlideState();
         public static readonly State<CharacterState> WallRun = new CharacterStateLibrary.WallRunState();
+        public static readonly State<CharacterState> Grapple = new CharacterStateLibrary.GrappleState();
     }
 
     /// <summary>
@@ -149,6 +150,24 @@ namespace OmnicatLabs.CharacterControllers
         [Tooltip("Minimum time required to be on the wall before you can jump")]
         public float minTimeToWallJump = .5f;
 
+        [Header("Grappling")]
+        public Transform barrelPoint;
+        public LayerMask grappleableLayers;
+        public float maxGrappleDistance = 10f;
+        public float grappleDelayTime = .5f;
+        public float grapplingCooldown = .5f;
+        public LineRenderer cableRenderer;
+        public float overShootYAxis;
+        public int ropeQuality = 500;
+        public float ropeDamper = 14f;
+        public float strength = 800f;
+        public float velocity = 15f;
+        public float waveCount = 3f;
+        public float waveHeight = 1f;
+        public AnimationCurve effectCurve;
+
+
+
         [Header("UI")]
         public Slider staminaSlider;
 
@@ -185,6 +204,7 @@ namespace OmnicatLabs.CharacterControllers
         [HideInInspector]
         public float savedStamina = 0f;
         internal bool canWallRun = true;
+        internal bool grappling = false;
 
         protected override void Awake()
         {
@@ -313,7 +333,7 @@ namespace OmnicatLabs.CharacterControllers
                 canWallRun = true;
             }
 
-            if (!isGrounded && !onSlope && !wallRunning)
+            if (!isGrounded && !onSlope && !wallRunning && !grappling)
             {
                 ChangeState(CharacterStates.Falling);
             }
@@ -323,6 +343,15 @@ namespace OmnicatLabs.CharacterControllers
 
 
         #region Input Callbacks
+        public void OnGrapple(InputAction.CallbackContext ctx)
+        {
+            if (ctx.performed)
+            {
+                ChangeState(CharacterStates.Grapple);
+            }
+        }
+
+
         public void OnMove(InputAction.CallbackContext context)
         {
             movementDir = context.ReadValue<Vector3>();

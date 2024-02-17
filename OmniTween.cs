@@ -328,9 +328,26 @@ namespace OmnicatLabs.Tween
     //    }
     //}
 
+    public class ValueTween
+    {
+        public float tweenTime;
+        public float timeElapsed = 0f;
+        public UnityAction<Tween> tweenAction;
+        public bool completed = false;
+        public bool markedForRemove = false;
+        public UnityAction onComplete;
+        public bool isPaused = false;
+    }
+
     public class OmniTween : MonoBehaviour
     {
         public static List<Tween> tweens = new List<Tween>();
+        public static List<Vector3> test = new List<Vector3>();
+
+        public static void TweenVector(ref Vector3 valueToChange, Vector3 start, Vector3 end, float amountOfTime, UnityAction onComplete, EasingFunctions.Ease easing = EasingFunctions.Ease.Linear)
+        {
+            test.Add(valueToChange);
+        }
 
         public static void TweenValue(ref float valueToChange, float finalValue, float amountOfTime, UnityAction onComplete, EasingFunctions.Ease easing = EasingFunctions.Ease.Linear)
         {

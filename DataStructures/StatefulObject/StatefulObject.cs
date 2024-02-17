@@ -62,6 +62,12 @@ namespace OmnicatLabs.StatefulObject
         /// <typeparam name="T"></typeparam>
         /// <param name="self">A reference to the controller object</param>
         public void OnStateExit<T>(StatefulObject<T> self) where T : IState;
+        /// <summary>
+        /// Identical to Unity LateUpdate
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="self">A reference to the controller object</param>
+        public void OnStateLateUpdate<T>(StatefulObject<T> self) where T : IState;
     }
 
     public class AnimationTriggers
@@ -269,6 +275,12 @@ namespace OmnicatLabs.StatefulObject
         {
             if (!isPaused)
                 state.data.OnStateFixedUpdate(this);
+        }
+
+        protected virtual void LateUpdate()
+        {
+            if (!isPaused)
+                state.data.OnStateLateUpdate(this);
         }
 
         public void ChangeState(State<T> newState)
