@@ -69,9 +69,15 @@
                     "initialStateCheck": false
                 },
                 {
+<<<<<<< Updated upstream
                     "name": "Grapple",
                     "type": "Button",
                     "id": "5ac71e36-0930-41d1-9e59-7b4457c9f715",
+=======
+                    "name": "Pause",
+                    "type": "Button",
+                    "id": "12fd2618-7a6c-4058-88c3-ba04ea77bbeb",
+>>>>>>> Stashed changes
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
@@ -389,6 +395,7 @@
                 },
                 {
                     "name": "",
+<<<<<<< Updated upstream
                     "id": "3c7d712d-f0f8-4126-ae19-36054b938c66",
                     "path": "<Keyboard>/e",
                     "interactions": "",
@@ -406,6 +413,25 @@
                     "processors": "",
                     "groups": "Controller",
                     "action": "Grapple",
+=======
+                    "id": "e4d9fe19-c219-4bc9-bd69-c321f6dd3ac1",
+                    "path": "<Gamepad>/start",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Controller",
+                    "action": "Pause",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "3cf05a05-c69f-4eb1-91c8-dc1e176f1a44",
+                    "path": "<Keyboard>/escape",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "FPS MNK Controls",
+                    "action": "Pause",
+>>>>>>> Stashed changes
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
