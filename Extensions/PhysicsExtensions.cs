@@ -23,5 +23,22 @@ public static class PhysicsExtensions
 
         return velocityXZ + velocityY;
     }
+
+    /* EXAMPLE USAGE
+     *  Find or estimate the lowest point on your object
+        Vector3 lowestPoint = new Vector3(controller.transform.position.x, controller.transform.position.y - 1f, controller.transform.position.z);
+        
+        Find the y distance relative to the lowest position
+        float grapplePointRelativeYPos = grapplePoint.y - lowestPoint.y;
+
+        Add a slight buffer to the tip of the arc so it can be controlled
+        float highestPointOnArc = grapplePointRelativeYPos + controller.overShootYAxis;
+        
+        If the determined arc point is anything less than a straight line confine it to just the buffer value so it does not bend backwards
+        if (grapplePointRelativeYPos < 0) highestPointOnArc = controller.overShootYAxis;
+        
+        Set the velocity of the object
+        rb.velocity = PhysicsExtensions.CalculateArcedVelocityToPoint(controller.transform.position, grapplePoint, highestPointOnArc);
+     */
 }
 

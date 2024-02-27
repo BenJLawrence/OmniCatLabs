@@ -861,9 +861,7 @@ namespace OmnicatLabs.CharacterControllers
             private Vector3 grapplePoint;
             private Spring spring;
             private Vector3 currentGrapplePosition;
-            private bool ropeFinished = false;
-            private bool moving = false;
-            private bool gotHit = false;
+            private bool shouldMove = false;
 
             public override void OnStateInit<T>(StatefulObject<T> self)
             {
@@ -875,51 +873,39 @@ namespace OmnicatLabs.CharacterControllers
                 base.OnStateEnter(self);
 
                 rb.velocity = Vector3.zero;
-
                 controller.grappling = true;
-
                 spring = new Spring();
 
-                ropeFinished = false;
-
                 RaycastHit hit;
-
-                gotHit = Physics.Raycast(controller.mainCam.transform.position, controller.mainCam.transform.forward, out hit, controller.maxGrappleDistance, controller.grappleableLayers);
-                if (gotHit)
+                if (Physics.Raycast(controller.mainCam.transform.position, controller.mainCam.transform.forward, out hit, controller.maxGrappleDistance, controller.grappleableLayers))
                 {
                     grapplePoint = hit.point;
-                    TimerManager.Instance.CreateTimer(controller.grappleDelayTime, DoGrapple);
                 }
                 else
                 {
                     grapplePoint = controller.mainCam.transform.position + controller.mainCam.transform.forward * controller.maxGrappleDistance;
-                    TimerManager.Instance.CreateTimer(controller.grappleDelayTime, StopGrapple);
                 }
             }
 
-            private void StopGrapple()
+            public override void OnStateUpdate<T>(StatefulObject<T> self)
             {
-                Debug.Log("Stopping");
-                controller.grappling = false;
-                //controller.ChangeState(CharacterStates.Falling);
+
             }
 
-            private void DoGrapple()
+            public override void OnStateFixedUpdate<T>(StatefulObject<T> self)
             {
-                Debug.Log("Doing grapple");
-                //bad calc
-                Vector3 lowestPoint = new Vector3(controller.transform.position.x, controller.transform.position.y - 1f, controller.transform.position.z);
-
-                float grapplePointRelativeYPos = grapplePoint.y - lowestPoint.y;
-                float highestPointOnArc = grapplePointRelativeYPos + controller.overShootYAxis;
-                if (grapplePointRelativeYPos < 0) highestPointOnArc = controller.overShootYAxis;
-
-                rb.velocity = PhysicsExtensions.CalculateArcedVelocityToPoint(controller.transform.position, grapplePoint, highestPointOnArc);
-
-                //check for a need to cancel if doing for too long
-
-                //bad calc
-                TimerManager.Instance.CreateTimer(1f, StopGrapple);
+                if (shouldMove)
+                {
+                    if (rb.position != grapplePoint)
+                    {
+                        Vector3 newPos = Vector3.MoveTowards(controller.rb.position, grapplePoint, 100f * Time.deltaTime);
+                        rb.MovePosition(newPos);
+                    }
+                    else
+                    {
+                        StopGrapple();
+                    }
+                }
             }
 
             public override void OnStateLateUpdate<T>(StatefulObject<T> self)
@@ -929,6 +915,22 @@ namespace OmnicatLabs.CharacterControllers
                 DrawRope();
             }
 
+            public override void OnStateExit<T>(StatefulObject<T> self)
+            {
+                shouldMove = false;
+                controller.grappling = false;
+                currentGrapplePosition = controller.barrelPoint.position;
+                spring.Reset();
+                controller.cableRenderer.positionCount = 0;
+            }
+
+            private void StopGrapple()
+            {
+                shouldMove = false;
+                controller.grappling = false;
+                controller.ChangeState(CharacterStates.Falling);
+            }
+
             private void DrawRope()
             {
                 if (!controller.grappling)
@@ -936,7 +938,6 @@ namespace OmnicatLabs.CharacterControllers
                     currentGrapplePosition = controller.barrelPoint.position;
                     spring.Reset();
                     controller.cableRenderer.positionCount = 0;
-                    ropeFinished = false;
                     return;
                 }
 
@@ -965,40 +966,10 @@ namespace OmnicatLabs.CharacterControllers
                     controller.cableRenderer.SetPosition(i, Vector3.Lerp(controller.barrelPoint.position, currentGrapplePosition, delta) + offset);
                 }
 
-                if (currentGrapplePosition == grapplePoint)
+                if (Vector3.Distance(currentGrapplePosition, grapplePoint) <= 0.1f)
                 {
-                    ropeFinished = true;
+                    shouldMove = true;
                 }
-            }
-
-            public override void OnStateUpdate<T>(StatefulObject<T> self)
-            {
-                //if (ropeFinished && !moving)
-                //{
-                //    moving = true;
-                //    if (gotHit)
-                //    {
-                //        DoGrapple();
-                //    }
-                //    else
-                //    {
-                //        StopGrapple();
-                //    }
-                //}
-            }
-
-            public override void OnStateFixedUpdate<T>(StatefulObject<T> self)
-            {
-
-            }
-
-            public override void OnStateExit<T>(StatefulObject<T> self)
-            {
-                controller.grappling = false;
-                currentGrapplePosition = controller.barrelPoint.position;
-                spring.Reset();
-                controller.cableRenderer.positionCount = 0;
-                ropeFinished = false;
             }
         }
 
