@@ -847,25 +847,31 @@ namespace OmnicatLabs.CharacterControllers
         public class GrappleState : CharacterState
         {
             /* TODO
-             * Slight slow fall when in air
-             * Cancel if in flight for too long
              * Point specific grapple
              * Special FOV and woosh effects
-             * increase pull speed (try scaling x and z of the returned velocity
+             * tune speed
              * cooldown
              * make sure you can only use it again after landing
              * adjust arm point slightly
-             * get around timers
              * Locking camera rot might help the feel
              */
             private Vector3 grapplePoint;
             private Spring spring;
             private Vector3 currentGrapplePosition;
             private bool shouldMove = false;
+            private bool doFalling = false;
 
             public override void OnStateInit<T>(StatefulObject<T> self)
             {
                 base.OnStateInit(self);
+
+                controller.onGrounded.AddListener(Test);
+            }
+
+            private void Test()
+            {
+                controller.canGrapple = true;
+                Debug.Log("Reset");
             }
 
             public override void OnStateEnter<T>(StatefulObject<T> self)
@@ -875,6 +881,11 @@ namespace OmnicatLabs.CharacterControllers
                 rb.velocity = Vector3.zero;
                 controller.grappling = true;
                 spring = new Spring();
+
+                if (!controller.isGrounded)
+                {
+                    doFalling = true;
+                }
 
                 RaycastHit hit;
                 if (Physics.Raycast(controller.mainCam.transform.position, controller.mainCam.transform.forward, out hit, controller.maxGrappleDistance, controller.grappleableLayers))
@@ -905,6 +916,10 @@ namespace OmnicatLabs.CharacterControllers
                     {
                         StopGrapple();
                     }
+                }
+                else if (doFalling)
+                {
+                    rb.AddForce(Vector3.down * 20f, ForceMode.Force);
                 }
             }
 

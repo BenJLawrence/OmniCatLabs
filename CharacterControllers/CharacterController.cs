@@ -205,6 +205,7 @@ namespace OmnicatLabs.CharacterControllers
         public float savedStamina = 0f;
         internal bool canWallRun = true;
         internal bool grappling = false;
+        internal bool canGrapple = true;
 
         protected override void Awake()
         {
@@ -307,7 +308,8 @@ namespace OmnicatLabs.CharacterControllers
             {
                 case GroundCheckType.Box:
                     isGrounded = Physics.CheckBox(groundPoint.position, boxBounds / 2f, Quaternion.identity, groundLayer, QueryTriggerInteraction.Ignore);
-                    if (groundHit.transform != null) Debug.Log(groundHit.transform.name);
+                    if (groundHit.transform != null) Debug.Log($"Ground: {groundHit.transform.name}");
+                    //need to add a ray here to get ground normal info
                     break;
                 case GroundCheckType.Raycast:
                     isGrounded = Physics.Raycast(groundPoint.position, Vector3.down, out groundHit, checkDistance, groundLayer);
@@ -345,8 +347,9 @@ namespace OmnicatLabs.CharacterControllers
         #region Input Callbacks
         public void OnGrapple(InputAction.CallbackContext ctx)
         {
-            if (ctx.performed)
+            if (ctx.performed && canGrapple)
             {
+                canGrapple = false;
                 ChangeState(CharacterStates.Grapple);
             }
         }
