@@ -909,7 +909,7 @@ namespace OmnicatLabs.CharacterControllers
                 {
                     if (rb.position != grapplePoint)
                     {
-                        Vector3 newPos = Vector3.MoveTowards(controller.rb.position, grapplePoint, 100f * Time.deltaTime);
+                        Vector3 newPos = Vector3.MoveTowards(controller.rb.position, grapplePoint, 20f * Time.deltaTime);
                         rb.MovePosition(newPos);
                     }
                     else

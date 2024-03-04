@@ -308,6 +308,10 @@ namespace OmnicatLabs.CharacterControllers
             {
                 case GroundCheckType.Box:
                     isGrounded = Physics.CheckBox(groundPoint.position, boxBounds / 2f, Quaternion.identity, groundLayer, QueryTriggerInteraction.Ignore);
+                    if (isGrounded)
+                    {
+                        Physics.Raycast(groundPoint.position, Vector3.down, out groundHit, boxBounds.y, groundLayer);
+                    }
                     if (groundHit.transform != null) Debug.Log($"Ground: {groundHit.transform.name}");
                     //need to add a ray here to get ground normal info
                     break;
@@ -333,6 +337,7 @@ namespace OmnicatLabs.CharacterControllers
                 onGrounded.Invoke();
                 currentJumpAmount = 0;
                 canWallRun = true;
+                Debug.Log("test");
             }
 
             if (!isGrounded && !onSlope && !wallRunning && !grappling)
@@ -511,7 +516,8 @@ namespace OmnicatLabs.CharacterControllers
                 switch (groundCheckType)
                 {
                     case GroundCheckType.Box:
-                        Gizmos.DrawWireCube(groundPoint.position, boxBounds);
+                        //isGrounded = Physics.CheckBox(groundPoint.position, boxBounds / 2f, Quaternion.identity, groundLayer, QueryTriggerInteraction.Ignore);
+                        Gizmos.DrawWireCube(groundPoint.position, boxBounds / 2f);
                         break;
                     case GroundCheckType.Raycast:
                         Gizmos.DrawRay(groundPoint.position, Vector3.down * checkDistance);
