@@ -269,6 +269,11 @@ namespace OmnicatLabs.CharacterControllers
             {
                 base.OnStateEnter(self);
 
+                if (controller.isGrounded)
+                {
+                    controller.ChangeState(CharacterStates.Idle);
+                }
+
                 canFall = false;
             }
 
@@ -308,11 +313,10 @@ namespace OmnicatLabs.CharacterControllers
             public override void OnStateUpdate<T>(StatefulObject<T> self)
             {
                 //Wall Running
-                if ((controller.wallLeft || controller.wallRight) && controller.movementDir.z > 0 && controller.canWallRun)
+                if ((controller.wallLeft || controller.wallRight) && controller.movementDir.z > 0 && controller.canWallRun && controller.wallRunningUnlocked)
                 {
                     controller.ChangeState(CharacterStates.WallRun);
                 }
-
 
                 //Velocity cap since when adding our in air force we could theoretically ramp speed forever
                 if (new Vector3(rb.velocity.x, 0f, rb.velocity.z).magnitude > controller.maxInAirSpeed)
@@ -847,7 +851,6 @@ namespace OmnicatLabs.CharacterControllers
         public class GrappleState : CharacterState
         {
             /* TODO
-             * Point specific grapple
              * Special FOV and woosh effects
              * tune speed
              * cooldown
@@ -860,24 +863,21 @@ namespace OmnicatLabs.CharacterControllers
             private Vector3 currentGrapplePosition;
             private bool shouldMove = false;
             private bool doFalling = false;
+            private bool gotHit = false;
+            private RaycastHit hit;
+            private bool changedFov = false;
+            private float originalFOV;
 
             public override void OnStateInit<T>(StatefulObject<T> self)
             {
                 base.OnStateInit(self);
-
-                controller.onGrounded.AddListener(Test);
-            }
-
-            private void Test()
-            {
-                controller.canGrapple = true;
-                Debug.Log("Reset");
             }
 
             public override void OnStateEnter<T>(StatefulObject<T> self)
             {
                 base.OnStateEnter(self);
 
+                originalFOV = controller.vCam.m_Lens.FieldOfView;
                 rb.velocity = Vector3.zero;
                 controller.grappling = true;
                 spring = new Spring();
@@ -887,8 +887,8 @@ namespace OmnicatLabs.CharacterControllers
                     doFalling = true;
                 }
 
-                RaycastHit hit;
-                if (Physics.Raycast(controller.mainCam.transform.position, controller.mainCam.transform.forward, out hit, controller.maxGrappleDistance, controller.grappleableLayers))
+                gotHit = Physics.Raycast(controller.mainCam.transform.position, controller.mainCam.transform.forward, out hit, controller.maxGrappleDistance, controller.grappleableLayers);
+                if (gotHit)
                 {
                     grapplePoint = hit.point;
                 }
@@ -900,7 +900,11 @@ namespace OmnicatLabs.CharacterControllers
 
             public override void OnStateUpdate<T>(StatefulObject<T> self)
             {
-
+                if (shouldMove && !changedFov)
+                {
+                    controller.camHolder.GetComponent<CameraEffects>().AdjustFOV(controller.grapplingFOV);
+                    changedFov = true;
+                }
             }
 
             public override void OnStateFixedUpdate<T>(StatefulObject<T> self)
@@ -932,17 +936,17 @@ namespace OmnicatLabs.CharacterControllers
 
             public override void OnStateExit<T>(StatefulObject<T> self)
             {
+                changedFov = false;
                 shouldMove = false;
                 controller.grappling = false;
                 currentGrapplePosition = controller.barrelPoint.position;
                 spring.Reset();
                 controller.cableRenderer.positionCount = 0;
+                controller.camHolder.GetComponent<CameraEffects>().AdjustFOV(originalFOV);
             }
 
             private void StopGrapple()
             {
-                shouldMove = false;
-                controller.grappling = false;
                 controller.ChangeState(CharacterStates.Falling);
             }
 
@@ -981,9 +985,17 @@ namespace OmnicatLabs.CharacterControllers
                     controller.cableRenderer.SetPosition(i, Vector3.Lerp(controller.barrelPoint.position, currentGrapplePosition, delta) + offset);
                 }
 
+                //Start movement when the iterable grapple point is at the position of the raycasted point
                 if (Vector3.Distance(currentGrapplePosition, grapplePoint) <= 0.1f)
                 {
-                    shouldMove = true;
+                    if (gotHit && hit.transform.CompareTag("Grappleable"))
+                    {
+                        shouldMove = true;
+                    }
+                    else
+                    {
+                        StopGrapple();
+                    }
                 }
             }
         }

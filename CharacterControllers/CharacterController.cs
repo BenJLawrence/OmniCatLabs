@@ -164,8 +164,9 @@ namespace OmnicatLabs.CharacterControllers
         public float velocity = 15f;
         public float waveCount = 3f;
         public float waveHeight = 1f;
+        public float grapplingFOV = 120f;
         public AnimationCurve effectCurve;
-
+        public bool grappleUnlocked = false;
 
 
         [Header("UI")]
@@ -352,7 +353,7 @@ namespace OmnicatLabs.CharacterControllers
         #region Input Callbacks
         public void OnGrapple(InputAction.CallbackContext ctx)
         {
-            if (ctx.performed && canGrapple)
+            if (ctx.performed && grappleUnlocked)
             {
                 canGrapple = false;
                 ChangeState(CharacterStates.Grapple);
