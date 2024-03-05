@@ -309,12 +309,10 @@ namespace OmnicatLabs.CharacterControllers
             {
                 case GroundCheckType.Box:
                     isGrounded = Physics.CheckBox(groundPoint.position, boxBounds / 2f, Quaternion.identity, groundLayer, QueryTriggerInteraction.Ignore);
-                    if (isGrounded)
-                    {
-                        Physics.Raycast(groundPoint.position, Vector3.down, out groundHit, boxBounds.y, groundLayer);
-                    }
-                    if (groundHit.transform != null) Debug.Log($"Ground: {groundHit.transform.name}");
-                    //need to add a ray here to get ground normal info
+                    //if (isGrounded)
+                    //{
+                    //    Physics.Raycast(groundPoint.position, Vector3.down, out groundHit, boxBounds.y, groundLayer);
+                    //}
                     break;
                 case GroundCheckType.Raycast:
                     isGrounded = Physics.Raycast(groundPoint.position, Vector3.down, out groundHit, checkDistance, groundLayer);
@@ -439,6 +437,11 @@ namespace OmnicatLabs.CharacterControllers
         #endregion
 
         #region Locks and Unlocks
+        public void TogglePause()
+        {
+            SetPause(!isPaused);
+        }
+
         public void SetControllerLocked(bool value, bool hidePlayer, bool unlockCursor)
         {
             SetPause(value);
@@ -518,7 +521,7 @@ namespace OmnicatLabs.CharacterControllers
                 {
                     case GroundCheckType.Box:
                         //isGrounded = Physics.CheckBox(groundPoint.position, boxBounds / 2f, Quaternion.identity, groundLayer, QueryTriggerInteraction.Ignore);
-                        Gizmos.DrawWireCube(groundPoint.position, boxBounds / 2f);
+                        Gizmos.DrawWireCube(groundPoint.position, boxBounds);
                         break;
                     case GroundCheckType.Raycast:
                         Gizmos.DrawRay(groundPoint.position, Vector3.down * checkDistance);

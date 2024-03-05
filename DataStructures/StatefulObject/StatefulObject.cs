@@ -215,7 +215,7 @@ namespace OmnicatLabs.StatefulObject
         protected State<T> state;
 
         internal Animator animator;
-        private bool isPaused = false;
+        public bool isPaused { get; protected set; } = false;
 
         protected void SetPause(bool value)
         {

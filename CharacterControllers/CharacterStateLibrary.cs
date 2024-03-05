@@ -269,11 +269,6 @@ namespace OmnicatLabs.CharacterControllers
             {
                 base.OnStateEnter(self);
 
-                if (controller.isGrounded)
-                {
-                    controller.ChangeState(CharacterStates.Idle);
-                }
-
                 canFall = false;
             }
 
@@ -947,7 +942,14 @@ namespace OmnicatLabs.CharacterControllers
 
             private void StopGrapple()
             {
-                controller.ChangeState(CharacterStates.Falling);
+                if (controller.isGrounded)
+                {
+                    controller.ChangeState(CharacterStates.Idle);
+                }
+                else
+                {
+                    controller.ChangeState(CharacterStates.Falling);
+                }
             }
 
             private void DrawRope()
