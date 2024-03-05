@@ -384,6 +384,11 @@ namespace OmnicatLabs.CharacterControllers
 
         public void OnJump(InputAction.CallbackContext context)
         {
+            if (PauseMenu.GameIsPaused)
+            {
+                return;
+            }
+
             if (context.performed && !isGrounded && currentJumpAmount < jumpAmount)
             {
                 jumpKeyDown = true;
