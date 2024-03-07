@@ -200,6 +200,8 @@ namespace OmnicatLabs.CharacterControllers
 
             public override void OnStateUpdate<T>(StatefulObject<T> self)
             {
+                rb.velocity = Vector3.zero;
+
                 if (controller.movementDir != Vector3.zero)
                 {
                     controller.ChangeState(CharacterStates.Moving);
@@ -906,7 +908,7 @@ namespace OmnicatLabs.CharacterControllers
             {
                 if (shouldMove)
                 {
-                    if (rb.position != grapplePoint)
+                    if (Vector3.Distance(rb.position, grapplePoint) > .3f)
                     {
                         Vector3 newPos = Vector3.MoveTowards(controller.rb.position, grapplePoint, 20f * Time.deltaTime);
                         rb.MovePosition(newPos);

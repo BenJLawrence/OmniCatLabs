@@ -207,6 +207,8 @@ namespace OmnicatLabs.CharacterControllers
         internal bool canWallRun = true;
         internal bool grappling = false;
         internal bool canGrapple = true;
+        [HideInInspector]
+        public MouseLook mouseControls;
 
         protected override void Awake()
         {
@@ -216,6 +218,7 @@ namespace OmnicatLabs.CharacterControllers
                 Instance = this;
             }
             rb = GetComponent<Rigidbody>();
+            mouseControls = GetComponentInChildren<MouseLook>();
         }
 
         private void Start()
@@ -445,6 +448,46 @@ namespace OmnicatLabs.CharacterControllers
         public void TogglePause()
         {
             SetPause(!isPaused);
+        }
+
+        public void SetLockedNoDisable(bool value, bool hidePlayer, bool unlockCursor)
+        {
+            SetPause(value);
+            mouseControls.enabled = !value;
+            if (unlockCursor)
+            {
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+            }
+            else
+            {
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible = Cursor.visible = false;
+            }
+
+            if (hidePlayer)
+            {
+                foreach (Transform child in mainCam.GetComponentsInChildren<Transform>())
+                {
+                    if (child.gameObject.layer == LayerMask.NameToLayer("Weapon"))
+                    {
+                        child.gameObject.SetActive(false);
+                    }
+                }
+                playerIsHidden = true;
+            }
+            else
+            {
+                foreach (Transform child in mainCam.GetComponentsInChildren<Transform>(true))
+                {
+                    if (child.gameObject.layer == LayerMask.NameToLayer("Weapon"))
+                    {
+                        child.gameObject.SetActive(true);
+                    }
+                }
+
+                playerIsHidden = false;
+            }
         }
 
         public void SetControllerLocked(bool value, bool hidePlayer, bool unlockCursor)
