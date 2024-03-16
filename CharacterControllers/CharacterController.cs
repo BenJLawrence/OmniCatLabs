@@ -339,7 +339,6 @@ namespace OmnicatLabs.CharacterControllers
                 onGrounded.Invoke();
                 currentJumpAmount = 0;
                 canWallRun = true;
-                Debug.Log("test");
             }
 
             if (!isGrounded && !onSlope && !wallRunning && !grappling)
@@ -387,7 +386,7 @@ namespace OmnicatLabs.CharacterControllers
 
         public void OnJump(InputAction.CallbackContext context)
         {
-            if (PauseMenu.GameIsPaused)
+            if (isPaused)
             {
                 return;
             }

@@ -33,7 +33,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Crouch/Slide",
+                    "name": "Crouch",
                     "type": "Button",
                     "id": "5cd41c9a-db0c-4164-b6ac-37e6ea0d5f67",
                     "expectedControlType": "Button",
@@ -304,7 +304,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "FPS MNK Controls",
-                    "action": "Crouch/Slide",
+                    "action": "Crouch",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -315,7 +315,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Controller",
-                    "action": "Crouch/Slide",
+                    "action": "Crouch",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -326,7 +326,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "FPS MNK Controls",
-                    "action": "Crouch/Slide",
+                    "action": "Crouch",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
