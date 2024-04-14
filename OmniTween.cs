@@ -250,6 +250,32 @@ namespace OmnicatLabs.Tween
             //    timeElapsed += Time.deltaTime;
             //    Debug.Log(tempval);
         }
+
+        public static void TweenScale(this Transform transform, Vector3 newScale, float amountOfTime, UnityAction onComplete, EasingFunctions.Ease easing = EasingFunctions.Ease.Linear)
+        {
+            Vector3 startingScale = transform.localScale;
+            float x = transform.localScale.x;
+            float y = transform.localScale.y;
+            float z = transform.localScale.z;
+
+            OmniTween.tweens.Add(new Tween(amountOfTime, onComplete, transform, (tween) =>
+            {
+                if (tween.timeElapsed < tween.tweenTime)
+                {
+                    transform.localScale = new Vector3(
+                        EasingFunctions.GetEasingFunction(easing).Invoke(x, newScale.x, tween.timeElapsed / tween.tweenTime),
+                        EasingFunctions.GetEasingFunction(easing).Invoke(y, newScale.y, tween.timeElapsed / tween.tweenTime),
+                        EasingFunctions.GetEasingFunction(easing).Invoke(z, newScale.z, tween.timeElapsed / tween.tweenTime)
+                        );
+                    tween.timeElapsed += Time.deltaTime;
+                }
+                else
+                {
+                    transform.localScale = newScale;
+                    tween.completed = true;
+                }
+            }));
+        }
     }
 
     public static class CapsuleColliderExtensions
