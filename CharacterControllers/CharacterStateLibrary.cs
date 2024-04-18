@@ -8,6 +8,9 @@ using OmnicatLabs.Audio;
 
 namespace OmnicatLabs.CharacterControllers
 {
+    /* TODO
+     * Referencing things on the controller that are assigned in start causes errors because state enter is called in awake of stateful object. Without changing script execution order you will run into data races on which awake is called first if just moved to awake
+    */
     public abstract class CharacterState : IState
     {
         protected CharacterController controller;
@@ -180,12 +183,18 @@ namespace OmnicatLabs.CharacterControllers
 
         public class IdleState : CharacterState
         {
+            private CameraEffects cfx;
+            public override void OnStateInit<T>(StatefulObject<T> self)
+            {
+                base.OnStateInit(self);
+            }
+
             public override void OnStateEnter<T>(StatefulObject<T> self)
             {
-                controller = self.GetComponent<CharacterController>();
                 rb = controller.GetComponent<Rigidbody>();
-
                 rb.velocity = Vector3.zero;
+                cfx = controller.GetComponentInChildren<CameraEffects>();
+
             }
 
             public override void OnStateExit<T>(StatefulObject<T> self)
@@ -199,7 +208,11 @@ namespace OmnicatLabs.CharacterControllers
             }
 
             public override void OnStateUpdate<T>(StatefulObject<T> self)
-            {
+            {                                
+                //Huge bandaid. Figure it out later
+                cfx.AdjustTilt(0f);
+                cfx.AdjustFOV(cfx.standardFOV);
+
                 rb.velocity = Vector3.zero;
 
                 if (controller.movementDir != Vector3.zero)
