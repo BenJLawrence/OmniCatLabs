@@ -451,6 +451,7 @@ namespace OmnicatLabs.CharacterControllers
 
         public void SetLockedNoDisable(bool value, bool hidePlayer, bool unlockCursor)
         {
+            ChangeState(CharacterStates.Idle);
             SetPause(value);
             mouseControls.enabled = !value;
             if (unlockCursor)
