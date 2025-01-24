@@ -39,8 +39,8 @@ namespace OmnicatLabs.CharacterControllers
                 {
                     sensitivity = sensitivitySetting.value;
                 }
-                float mouseX = Input.GetAxis("Mouse X") * sensitivity;
-                float mouseY = Input.GetAxis("Mouse Y") * sensitivity;
+                float mouseX = UnityEngine.Input.GetAxis("Mouse X") * sensitivity;
+                float mouseY = UnityEngine.Input.GetAxis("Mouse Y") * sensitivity;
 
                 xRotation -= mouseY;
                 xRotation = Mathf.Clamp(xRotation, -85f, 85f);

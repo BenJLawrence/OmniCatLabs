@@ -60,13 +60,13 @@ namespace OmnicatLabs.CharacterControllers
             {
                 base.OnStateEnter(self);
 
-                if (!AudioManager.Instance.IsPlaying("Footstep") && !AudioManager.Instance.IsPlaying("Footstep2") && !AudioManager.Instance.IsPlaying("Footstep3") && !AudioManager.Instance.IsPlaying("Footstep4"))
-                {
-                    AudioManager.Instance.Play(footsteps[UnityEngine.Random.Range(0, footsteps.Length)]);
-                }
+                //if (!AudioManager.Instance.IsPlaying("Footstep") && !AudioManager.Instance.IsPlaying("Footstep2") && !AudioManager.Instance.IsPlaying("Footstep3") && !AudioManager.Instance.IsPlaying("Footstep4"))
+                //{
+                //    AudioManager.Instance.Play(footsteps[UnityEngine.Random.Range(0, footsteps.Length)]);
+                //}
 
-                if (ArmController.Instance.anim != null)
-                ArmController.Instance.anim.SetBool("Walking", true);
+                //if (ArmController.Instance.anim != null)
+                //ArmController.Instance.anim.SetBool("Walking", true);
 
                 TimerManager.Instance.CreateTimer(controller.footstepInterval, () => AudioManager.Instance.Play(footsteps[UnityEngine.Random.Range(0, footsteps.Length)]), out timer, true);
             }
@@ -74,8 +74,8 @@ namespace OmnicatLabs.CharacterControllers
             public override void OnStateExit<T>(StatefulObject<T> self)
             {
                 TimerManager.Instance.Stop(timer);
-                if (ArmController.Instance.anim != null)
-                    ArmController.Instance.anim.SetBool("Walking", false);
+                //if (ArmController.Instance.anim != null)
+                    //ArmController.Instance.anim.SetBool("Walking", false);
             }
 
             public override void OnStateFixedUpdate<T>(StatefulObject<T> self)
@@ -104,7 +104,7 @@ namespace OmnicatLabs.CharacterControllers
 
                     if (controller.maintainVelocity)
                     {
-                        rb.velocity = GetSlopeMoveDir() * targetSpeed * Time.deltaTime;
+                        rb.linearVelocity = GetSlopeMoveDir() * targetSpeed * Time.deltaTime;
                     }
                     else
                     {
@@ -112,7 +112,7 @@ namespace OmnicatLabs.CharacterControllers
                         float angle = Vector3.Angle(controller.slopeHit.normal, Vector3.up);
                         float slopeMultiplier = Mathf.Cos(angle * Mathf.Deg2Rad);
                         float newTarget = slopeMultiplier * targetSpeed;
-                        rb.velocity = GetSlopeMoveDir() * newTarget * Time.deltaTime;
+                        rb.linearVelocity = GetSlopeMoveDir() * newTarget * Time.deltaTime;
                     }
                 }
             }
@@ -160,9 +160,9 @@ namespace OmnicatLabs.CharacterControllers
                     controller.ChangeState(CharacterStates.Crouching);
                 }
 
-                if (rb.velocity.magnitude >= 5)
+                if (rb.linearVelocity.magnitude >= 5)
                 {
-                    rb.velocity = rb.velocity.normalized * 5;
+                    rb.linearVelocity = rb.linearVelocity.normalized * 5;
                 }
                 //reset velocity every frame since we don't want to build any acceleration
                 //rb.velocity = new Vector3(0f, rb.velocity.y, 0f);
@@ -183,7 +183,7 @@ namespace OmnicatLabs.CharacterControllers
 
         public class IdleState : CharacterState
         {
-            private CameraEffects cfx;
+            //private CameraEffects cfx;
             public override void OnStateInit<T>(StatefulObject<T> self)
             {
                 base.OnStateInit(self);
@@ -192,8 +192,8 @@ namespace OmnicatLabs.CharacterControllers
             public override void OnStateEnter<T>(StatefulObject<T> self)
             {
                 rb = controller.GetComponent<Rigidbody>();
-                rb.velocity = Vector3.zero;
-                cfx = controller.GetComponentInChildren<CameraEffects>();
+                rb.linearVelocity = Vector3.zero;
+                //cfx = controller.GetComponentInChildren<CameraEffects>();
 
             }
 
@@ -210,10 +210,10 @@ namespace OmnicatLabs.CharacterControllers
             public override void OnStateUpdate<T>(StatefulObject<T> self)
             {                                
                 //Huge bandaid. Figure it out later
-                cfx.AdjustTilt(0f);
-                cfx.AdjustFOV(cfx.standardFOV);
+                //cfx.AdjustTilt(0f);
+                //cfx.AdjustFOV(cfx.standardFOV);
 
-                rb.velocity = Vector3.zero;
+                rb.linearVelocity = Vector3.zero;
 
                 if (controller.movementDir != Vector3.zero)
                 {
@@ -236,7 +236,7 @@ namespace OmnicatLabs.CharacterControllers
                 base.OnStateEnter(self);
                 airTime = 0f;
 
-                rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
+                rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
                 rb.AddForce((Vector3.up * controller.multiJumpForce), ForceMode.Impulse);
                 controller.currentJumpAmount++;
             }
@@ -297,7 +297,6 @@ namespace OmnicatLabs.CharacterControllers
                 currentTime += Time.deltaTime;
                 if (currentTime > controller.coyoteTime)
                 {
-                    //Debug.Log("Happening");
                     //handles the extra downward force when falling
                     rb.AddForce(Vector3.down * controller.fallForce * Time.deltaTime, ForceMode.Force);
                 }
@@ -310,7 +309,7 @@ namespace OmnicatLabs.CharacterControllers
                 }
                 else if (controller.instantAirStop)
                 {
-                    rb.velocity = new Vector3(0f, rb.velocity.y, 0f);
+                    rb.linearVelocity = new Vector3(0f, rb.linearVelocity.y, 0f);
                 }
                 else
                 {
@@ -329,11 +328,11 @@ namespace OmnicatLabs.CharacterControllers
                 }
 
                 //Velocity cap since when adding our in air force we could theoretically ramp speed forever
-                if (new Vector3(rb.velocity.x, 0f, rb.velocity.z).magnitude > controller.maxInAirSpeed)
+                if (new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z).magnitude > controller.maxInAirSpeed)
                 {
-                    horizontalVelocityCheck = new Vector3(rb.velocity.x, 0f, rb.velocity.z).normalized * controller.maxInAirSpeed;
-                    horizontalVelocityCheck.y = rb.velocity.y;
-                    rb.velocity = horizontalVelocityCheck;
+                    horizontalVelocityCheck = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z).normalized * controller.maxInAirSpeed;
+                    horizontalVelocityCheck.y = rb.linearVelocity.y;
+                    rb.linearVelocity = horizontalVelocityCheck;
                 }
 
                 if (controller.onSlope)
@@ -356,7 +355,7 @@ namespace OmnicatLabs.CharacterControllers
 
                 if (controller.lockOnLanding)
                 {
-                    rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
+                    rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
                 }
 
                 controller.ChangeState(CharacterStates.Idle);
@@ -389,7 +388,7 @@ namespace OmnicatLabs.CharacterControllers
                     controller.ChangeState(CharacterStates.Idle);
                 }
 
-                rb.velocity = new Vector3(0f, rb.velocity.y, 0f);
+                rb.linearVelocity = new Vector3(0f, rb.linearVelocity.y, 0f);
             }
         }
 
@@ -403,7 +402,7 @@ namespace OmnicatLabs.CharacterControllers
                 rb = controller.GetComponent<Rigidbody>();
                 airTime = 0f;
 
-                rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
+                rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
 
                 rb.AddForce((Vector3.up ) * controller.baseJumpForce, ForceMode.Impulse);
             }
@@ -485,7 +484,7 @@ namespace OmnicatLabs.CharacterControllers
                 {
                     if (controller.maintainVelocity)
                     {
-                        rb.velocity = GetSlopeMoveDir() * targetSpeed * Time.deltaTime;
+                        rb.linearVelocity = GetSlopeMoveDir() * targetSpeed * Time.deltaTime;
                     }
                     else
                     {
@@ -493,7 +492,7 @@ namespace OmnicatLabs.CharacterControllers
                         float angle = Vector3.Angle(controller.slopeHit.normal, Vector3.up);
                         float slopeMultiplier = Mathf.Cos(angle * Mathf.Deg2Rad);
                         float newTarget = slopeMultiplier * targetSpeed;
-                        rb.velocity = GetSlopeMoveDir() * newTarget * Time.deltaTime;
+                        rb.linearVelocity = GetSlopeMoveDir() * newTarget * Time.deltaTime;
                     }
                 }
             }
@@ -542,7 +541,7 @@ namespace OmnicatLabs.CharacterControllers
                 //}
 
                 //reset velocity every frame since we don't want to build any acceleration
-                rb.velocity = new Vector3(0f, rb.velocity.y, 0f);
+                rb.linearVelocity = new Vector3(0f, rb.linearVelocity.y, 0f);
             }
         }
 
@@ -610,7 +609,7 @@ namespace OmnicatLabs.CharacterControllers
                 {
                     if (controller.maintainVelocity)
                     {
-                        rb.velocity = GetSlopeMoveDir() * targetSpeed * Time.deltaTime;
+                        rb.linearVelocity = GetSlopeMoveDir() * targetSpeed * Time.deltaTime;
                     }
                     else
                     {
@@ -618,7 +617,7 @@ namespace OmnicatLabs.CharacterControllers
                         float angle = Vector3.Angle(controller.slopeHit.normal, Vector3.up);
                         float slopeMultiplier = Mathf.Cos(angle * Mathf.Deg2Rad);
                         float newTarget = slopeMultiplier * targetSpeed;
-                        rb.velocity = GetSlopeMoveDir() * newTarget * Time.deltaTime;
+                        rb.linearVelocity = GetSlopeMoveDir() * newTarget * Time.deltaTime;
                     }
                 }
             }
@@ -647,7 +646,7 @@ namespace OmnicatLabs.CharacterControllers
                     }
                 }
 
-                rb.velocity = new Vector3(0f, rb.velocity.y, 0f);
+                rb.linearVelocity = new Vector3(0f, rb.linearVelocity.y, 0f);
             }
         }
 
@@ -689,7 +688,6 @@ namespace OmnicatLabs.CharacterControllers
             public override void OnStateExit<T>(StatefulObject<T> self)
             {
                 AudioManager.Instance.Stop("PlayerSlide");
-                //Debug.Log("Called");
                 if (!goingToCrouch)
                 {
                     controller.modelCollider.TweenHeight(originalHeight, controller.slideTransitionSpeed, () => { }, EasingFunctions.Ease.EaseOutQuart);
@@ -713,7 +711,7 @@ namespace OmnicatLabs.CharacterControllers
                     if (controller.slideUsesStamina)
                     {
                         controller.currentStamina -= controller.staminaReductionRate * Time.deltaTime;
-                        controller.staminaSlider.value = controller.currentStamina;
+                        //controller.staminaSlider.value = controller.currentStamina;
                         if (controller.currentStamina < 0f)
                         {
                             controller.currentStamina = 0f;
@@ -747,9 +745,9 @@ namespace OmnicatLabs.CharacterControllers
                     }
 
                 }
-                if (rb.velocity.magnitude > 5)
+                if (rb.linearVelocity.magnitude > 5)
                 {
-                    rb.velocity = rb.velocity.normalized * 5;
+                    rb.linearVelocity = rb.linearVelocity.normalized * 5;
                 }
             }
         }
@@ -773,17 +771,15 @@ namespace OmnicatLabs.CharacterControllers
                 base.OnStateEnter(self);
 
                 controller.onAirJump.AddListener(WallJump);
-                originalFOV = controller.vCam.m_Lens.FieldOfView;
-                originalZTilt = controller.vCam.m_Lens.Dutch;
 
 
                 controller.wallRunning = true;
                 controller.canWallRun = false;
                 TimerManager.Instance.CreateTimer(controller.maxWallRunTime, () => controller.ChangeState(CharacterStates.Falling), out timer);
 
-                controller.camHolder.GetComponent<CameraEffects>().AdjustFOV(controller.wallRunFOV);
-                if (controller.wallLeft) controller.camHolder.GetComponent<CameraEffects>().AdjustTilt(-controller.wallRunCameraTilt);
-                else controller.camHolder.GetComponent<CameraEffects>().AdjustTilt(controller.wallRunCameraTilt);
+                //controller.camHolder.GetComponent<CameraEffects>().AdjustFOV(controller.wallRunFOV);
+              //  if (controller.wallLeft) controller.camHolder.GetComponent<CameraEffects>().AdjustTilt(-controller.wallRunCameraTilt);
+               // else controller.camHolder.GetComponent<CameraEffects>().AdjustTilt(controller.wallRunCameraTilt);
             }
 
             public override void OnStateExit<T>(StatefulObject<T> self)
@@ -791,8 +787,8 @@ namespace OmnicatLabs.CharacterControllers
                 controller.wallRunning = false;
                 controller.onAirJump.RemoveListener(WallJump);
                 TimerManager.Instance.Stop(timer);
-                controller.camHolder.GetComponent<CameraEffects>().AdjustFOV(originalFOV);
-                controller.camHolder.GetComponent<CameraEffects>().AdjustTilt(originalZTilt);
+                //controller.camHolder.GetComponent<CameraEffects>().AdjustFOV(originalFOV);
+                //controller.camHolder.GetComponent<CameraEffects>().AdjustTilt(originalZTilt);
             }
 
             public override void OnStateFixedUpdate<T>(StatefulObject<T> self)
@@ -821,9 +817,9 @@ namespace OmnicatLabs.CharacterControllers
                     wallForward = -wallForward;
 
                 //Caps movement velocity on the wall
-                if (rb.velocity.magnitude > 5f)
+                if (rb.linearVelocity.magnitude > 5f)
                 {
-                    rb.velocity = rb.velocity.normalized * 5f;
+                    rb.linearVelocity = rb.linearVelocity.normalized * 5f;
                 }
 
                 CancelCheck();
@@ -843,7 +839,7 @@ namespace OmnicatLabs.CharacterControllers
                 if ((timer.amountOfTime - timer.timeRemaining) > controller.minTimeToWallJump)
                 {
                     Vector3 forceToApply = controller.transform.up * controller.wallJumpForce + wallNormal * controller.wallJumpSideForce;
-                    rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.y);
+                    rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.y);
                     rb.AddForce(forceToApply, ForceMode.Impulse);
                     controller.ChangeState(CharacterStates.Falling);
                 }
@@ -869,7 +865,7 @@ namespace OmnicatLabs.CharacterControllers
              * Locking camera rot might help the feel
              */
             private Vector3 grapplePoint;
-            private Spring spring;
+            //private Spring spring;
             private Vector3 currentGrapplePosition;
             private bool shouldMove = false;
             private bool doFalling = false;
@@ -887,10 +883,10 @@ namespace OmnicatLabs.CharacterControllers
             {
                 base.OnStateEnter(self);
 
-                originalFOV = controller.vCam.m_Lens.FieldOfView;
-                rb.velocity = Vector3.zero;
+                originalFOV = controller.vCam.Lens.FieldOfView;
+                rb.linearVelocity = Vector3.zero;
                 controller.grappling = true;
-                spring = new Spring();
+                //spring = new Spring();
 
                 if (!controller.isGrounded)
                 {
@@ -912,7 +908,7 @@ namespace OmnicatLabs.CharacterControllers
             {
                 if (shouldMove && !changedFov)
                 {
-                    controller.camHolder.GetComponent<CameraEffects>().AdjustFOV(controller.grapplingFOV);
+                    //controller.camHolder.GetComponent<CameraEffects>().AdjustFOV(controller.grapplingFOV);
                     changedFov = true;
                 }
             }
@@ -950,9 +946,9 @@ namespace OmnicatLabs.CharacterControllers
                 shouldMove = false;
                 controller.grappling = false;
                 currentGrapplePosition = controller.barrelPoint.position;
-                spring.Reset();
+                //spring.Reset();
                 controller.cableRenderer.positionCount = 0;
-                controller.camHolder.GetComponent<CameraEffects>().AdjustFOV(originalFOV);
+                //controller.camHolder.GetComponent<CameraEffects>().AdjustFOV(originalFOV);
             }
 
             private void StopGrapple()
@@ -972,20 +968,20 @@ namespace OmnicatLabs.CharacterControllers
                 if (!controller.grappling)
                 {
                     currentGrapplePosition = controller.barrelPoint.position;
-                    spring.Reset();
+                    //spring.Reset();
                     controller.cableRenderer.positionCount = 0;
                     return;
                 }
 
                 if (controller.cableRenderer.positionCount == 0)
                 {
-                    spring.SetVelocity(controller.velocity);
+                   // spring.SetVelocity(controller.velocity);
                     controller.cableRenderer.positionCount = controller.ropeQuality;
                 }
 
-                spring.SetDamper(controller.ropeDamper);
-                spring.SetStrength(controller.strength);
-                spring.Update(Time.deltaTime);
+                //spring.SetDamper(controller.ropeDamper);
+                //spring.SetStrength(controller.strength);
+               // spring.Update(Time.deltaTime);
 
                 var up = Quaternion.LookRotation((grapplePoint - controller.barrelPoint.position).normalized) * Vector3.up;
 
@@ -997,7 +993,7 @@ namespace OmnicatLabs.CharacterControllers
                     var offset = up * 
                         controller.waveHeight * 
                         Mathf.Sin(delta * controller.waveCount * Mathf.PI) * 
-                        spring.Value * 
+                        //spring.Value * 
                         controller.effectCurve.Evaluate(delta);
                     controller.cableRenderer.SetPosition(i, Vector3.Lerp(controller.barrelPoint.position, currentGrapplePosition, delta) + offset);
                 }

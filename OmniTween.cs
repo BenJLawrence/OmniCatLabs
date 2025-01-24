@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using TMPro;
 using System.Linq;
-using Cinemachine;
+//using Cinemachine;
 
 namespace OmnicatLabs.Tween
 {
@@ -104,51 +104,51 @@ namespace OmnicatLabs.Tween
             }));
         }
 
-        public static void TweenFOV(this CinemachineVirtualCamera camera, float newFOV, float amountOfTime, UnityAction onComplete = null, EasingFunctions.Ease easing = EasingFunctions.Ease.Linear)
-        {
-            float startingFOV = camera.m_Lens.FieldOfView;
+        //public static void TweenFOV(this CinemachineVirtualCamera camera, float newFOV, float amountOfTime, UnityAction onComplete = null, EasingFunctions.Ease easing = EasingFunctions.Ease.Linear)
+        //{
+        //    float startingFOV = camera.m_Lens.FieldOfView;
 
-            OmniTween.tweens.Add(new Tween(amountOfTime, onComplete, camera, (tween) =>
-            {
-                if (tween.timeElapsed < tween.tweenTime)
-                {
-                    if (camera != null)
-                    {
-                        camera.m_Lens.FieldOfView = EasingFunctions.GetEasingFunction(easing).Invoke(startingFOV, newFOV, tween.timeElapsed / tween.tweenTime);
-                        tween.timeElapsed += Time.deltaTime;
-                    }
-                }
-                else
-                {
-                    if (camera != null)
-                        camera.m_Lens.FieldOfView = newFOV;
-                    tween.completed = true;
-                }
-            }));
-        }
+        //    OmniTween.tweens.Add(new Tween(amountOfTime, onComplete, camera, (tween) =>
+        //    {
+        //        if (tween.timeElapsed < tween.tweenTime)
+        //        {
+        //            if (camera != null)
+        //            {
+        //                camera.m_Lens.FieldOfView = EasingFunctions.GetEasingFunction(easing).Invoke(startingFOV, newFOV, tween.timeElapsed / tween.tweenTime);
+        //                tween.timeElapsed += Time.deltaTime;
+        //            }
+        //        }
+        //        else
+        //        {
+        //            if (camera != null)
+        //                camera.m_Lens.FieldOfView = newFOV;
+        //            tween.completed = true;
+        //        }
+        //    }));
+        //}
 
-        public static void TweenDutch(this CinemachineVirtualCamera camera, float newDutch, float amountOfTime, UnityAction onComplete = null, EasingFunctions.Ease easing = EasingFunctions.Ease.Linear)
-        {
-            float startingDutch = camera.m_Lens.Dutch;
+        //public static void TweenDutch(this CinemachineVirtualCamera camera, float newDutch, float amountOfTime, UnityAction onComplete = null, EasingFunctions.Ease easing = EasingFunctions.Ease.Linear)
+        //{
+        //    float startingDutch = camera.m_Lens.Dutch;
 
-            OmniTween.tweens.Add(new Tween(amountOfTime, onComplete, camera, (tween) =>
-            {
-                if (tween.timeElapsed < tween.tweenTime)
-                {
-                    if (camera != null)
-                    {
-                        camera.m_Lens.Dutch = EasingFunctions.GetEasingFunction(easing).Invoke(startingDutch, newDutch, tween.timeElapsed / tween.tweenTime);
-                        tween.timeElapsed += Time.deltaTime;
-                    }
-                }
-                else
-                {
-                    if (camera != null)
-                        camera.m_Lens.Dutch = newDutch;
-                    tween.completed = true;
-                }
-            }));
-        }
+        //    OmniTween.tweens.Add(new Tween(amountOfTime, onComplete, camera, (tween) =>
+        //    {
+        //        if (tween.timeElapsed < tween.tweenTime)
+        //        {
+        //            if (camera != null)
+        //            {
+        //                camera.m_Lens.Dutch = EasingFunctions.GetEasingFunction(easing).Invoke(startingDutch, newDutch, tween.timeElapsed / tween.tweenTime);
+        //                tween.timeElapsed += Time.deltaTime;
+        //            }
+        //        }
+        //        else
+        //        {
+        //            if (camera != null)
+        //                camera.m_Lens.Dutch = newDutch;
+        //            tween.completed = true;
+        //        }
+        //    }));
+        //}
 
         public static void FadeIn(this CanvasGroup cg, float amountOfTime, UnityAction onComplete = null, EasingFunctions.Ease easing = EasingFunctions.Ease.Linear)
         {

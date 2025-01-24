@@ -4,7 +4,7 @@ using UnityEngine.Events;
 using System;
 using OmnicatLabs.StatefulObject;
 using UnityEngine.UI;
-using Cinemachine;
+using Unity.Cinemachine;
 
 namespace OmnicatLabs.CharacterControllers
 {
@@ -43,7 +43,7 @@ namespace OmnicatLabs.CharacterControllers
         public static CharacterController Instance;
 
         public Camera mainCam;
-        public CinemachineVirtualCamera vCam;
+        public CinemachineCamera vCam;
         public CapsuleCollider modelCollider;
 
         [Header("General")]
@@ -170,7 +170,7 @@ namespace OmnicatLabs.CharacterControllers
 
 
         [Header("UI")]
-        public Slider staminaSlider;
+        //public Slider staminaSlider;
 
         internal Vector3 movementDir;
         internal bool isGrounded = true;
@@ -225,16 +225,16 @@ namespace OmnicatLabs.CharacterControllers
         {
             camHolder = mainCam.transform.parent;
             startingCamHeight = camHolder.transform.localPosition.y;
-            if (staminaSlider == null)
-            {
-                Debug.Log("The slider for stamina has not been set in the inspector");
-            }
-            else
-            {
-                staminaSlider.maxValue = maxStamina;
-                staminaSlider.value = maxStamina;
-            }
-            SaveManager.Instance.onReset.AddListener(ResetStamina);
+            //if (staminaSlider == null)
+            //{
+            //    Debug.Log("The slider for stamina has not been set in the inspector");
+            //}
+            //else
+            //{
+            //    staminaSlider.maxValue = maxStamina;
+            //    staminaSlider.value = maxStamina;
+            //}
+            //SaveManager.Instance.onReset.AddListener(ResetStamina);
             currentStamina = maxStamina;
             fixedGroundPoint = groundPoint.localPosition;
         }
@@ -242,7 +242,7 @@ namespace OmnicatLabs.CharacterControllers
         private void ResetStamina()
         {
             currentStamina = savedStamina;
-            staminaSlider.value = currentStamina;
+            //staminaSlider.value = currentStamina;
         }
 
         protected override void Update()
@@ -272,8 +272,8 @@ namespace OmnicatLabs.CharacterControllers
                 sprinting = false;
                 currentStamina = 0f;
             }
-            if (staminaSlider != null)
-                staminaSlider.value = currentStamina;
+            //if (staminaSlider != null)
+            //    staminaSlider.value = currentStamina;
         }
 
         private void WallRunCheck()
@@ -287,7 +287,7 @@ namespace OmnicatLabs.CharacterControllers
             UnityEngine.Debug.DrawRay(transform.position, transform.TransformVector(movementDir) * wallCheckDistance, Color.red);
             if (Physics.Raycast(transform.position, transform.TransformVector(movementDir), wallCheckDistance))
             {
-                GetComponent<Rigidbody>().velocity = new Vector3(0f, GetComponent<Rigidbody>().velocity.y, 0f);
+                GetComponent<Rigidbody>().linearVelocity = new Vector3(0f, GetComponent<Rigidbody>().linearVelocity.y, 0f);
             }
         }
 
@@ -368,10 +368,10 @@ namespace OmnicatLabs.CharacterControllers
 
         public void OnSprint(InputAction.CallbackContext context)
         {
-            if (context.performed && !sprinting && !Audio.AudioManager.Instance.IsPlaying("PlayerBreath") && currentStamina > 0f)
-            {
-                Audio.AudioManager.Instance.Play("PlayerBreath", Audio.SoundMode.Instant);
-            }
+            //if (context.performed && !sprinting && !Audio.AudioManager.Instance.IsPlaying("PlayerBreath") && currentStamina > 0f)
+            //{
+            //    Audio.AudioManager.Instance.Play("PlayerBreath", Audio.SoundMode.Instant);
+            //}
 
             if ((context.performed && movementDir.z > 0) || (context.performed && multiDirSprint) && currentStamina > 0f)
             {
