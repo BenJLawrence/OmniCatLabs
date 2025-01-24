@@ -270,7 +270,7 @@ namespace OmnicatLabs.CharacterControllers
             private Vector3 horizontalVelocityCheck;
             private float reduction;
             private float currentTime;
-            private bool canFall = false;
+            //private bool canFall = false;
 
             public override void OnStateInit<T>(StatefulObject<T> self)
             {
@@ -284,7 +284,7 @@ namespace OmnicatLabs.CharacterControllers
             {
                 base.OnStateEnter(self);
 
-                canFall = false;
+                //canFall = false;
             }
 
             public override void OnStateExit<T>(StatefulObject<T> self)
@@ -551,7 +551,7 @@ namespace OmnicatLabs.CharacterControllers
 
             //private float originalCamHeight;
             private float originalColHeight;
-            private bool inCrouch = false;
+            //private bool inCrouch = false;
 
             public bool CanStand()
             {
@@ -580,7 +580,7 @@ namespace OmnicatLabs.CharacterControllers
 
             public override void OnStateExit<T>(StatefulObject<T> self)
             {
-                inCrouch = false;
+                //inCrouch = false;
                 controller.isCrouching = false;
                 controller.modelCollider.TweenHeight(originalColHeight, controller.toCrouchSpeed, () => { }, EasingFunctions.Ease.EaseOutQuart);
                 controller.camHolder.transform.TweenYPos(controller.originalHeight, controller.toCrouchSpeed, null, null, EasingFunctions.Ease.EaseOutQuart);

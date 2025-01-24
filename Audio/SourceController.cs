@@ -15,7 +15,7 @@ namespace OmnicatLabs.Audio
         [HideInInspector]
         public AudioDistortionFilter assignedDistortionFilter;
         internal Queue<Sound> soundQueue = new Queue<Sound>();
-        private bool completed = false;
+        //private bool completed = false;
 
         private void Start()
         {
