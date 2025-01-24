@@ -116,7 +116,7 @@ public class ChannelManager : MonoBehaviour
 
     private static void RegisterPreRuntimeListeners()
     {
-        var monoBehaviours = FindObjectsOfType<MonoBehaviour>();
+        var monoBehaviours = FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None);
 
         foreach (var monoBehavior in monoBehaviours)
         {

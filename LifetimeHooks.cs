@@ -20,6 +20,7 @@ public sealed class LifetimeHooks : MonoBehaviour
 
     public void Release()
     {
+        //TODO this should happen when manual dispose is used as well.
         onReleaseToPool.Invoke();
         pooledObject.Dispose();
     }

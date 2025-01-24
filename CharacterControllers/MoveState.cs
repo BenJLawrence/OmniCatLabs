@@ -2,19 +2,24 @@ using UnityEngine;
 
 namespace OmnicatLabs.Input {
     public class MoveState : IState {
-        public void Enter() {
+        public float speed;
+        public override void Enter() {
+            
+        }
+
+        public override void Exit() {
             throw new System.NotImplementedException();
         }
 
-        public void Exit() {
+        protected override void Initialize() {
+            base.Initialize();
+        }
+
+        public override void Update() {
             throw new System.NotImplementedException();
         }
 
-        public void Initialize() {
-            throw new System.NotImplementedException();
-        }
-
-        public void Update() {
+        public override void FixedUpdate() {
             throw new System.NotImplementedException();
         }
     }

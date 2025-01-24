@@ -1,6 +1,11 @@
 using System;
 using System.Collections.Generic;
 
+namespace System.Runtime.CompilerServices
+{
+    internal static class IsExternalInit { }
+}
+
 //Add this in the omnicat utils later
 public static class IEnumerableExtensions
 {

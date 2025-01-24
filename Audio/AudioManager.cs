@@ -115,6 +115,7 @@ namespace OmnicatLabs.Audio
         {
             if (Instance == null)
                 Instance = this;
+            else Destroy(this);
 
             poolParent = new GameObject().transform;
             poolParent.name = "AudioSourcePool";
