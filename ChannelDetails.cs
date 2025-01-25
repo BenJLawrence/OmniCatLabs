@@ -97,6 +97,7 @@ public class Channel {
     public ReceiverList receivers = new ReceiverList();
 }
 
+#if UNITY_EDITOR
 [CustomEditor(typeof(ChannelHub))]
 public class ChannelHubEditor : Editor {
     private SerializedProperty channelHubProperty;
@@ -144,3 +145,4 @@ public class ChannelHubEditor : Editor {
         EditorUtility.SetDirty(channelHub);
     }
 }
+#endif

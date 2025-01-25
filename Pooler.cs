@@ -46,6 +46,7 @@ public class Pooler : ScriptableObject
     public Dictionary<object, IPool> pools = new Dictionary<object, IPool>();
 }
 
+#if UNITY_EDITOR
 [CustomEditor(typeof(Pooler))]
 public class PoolerEditor : Editor
 {
@@ -67,3 +68,4 @@ public class PoolerEditor : Editor
         serializedObject.ApplyModifiedProperties();
     }
 }
+#endif
