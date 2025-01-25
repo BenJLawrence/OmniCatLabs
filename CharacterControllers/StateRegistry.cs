@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace OmnicatLabs.Input {
     public static class StateRegistry {
-        private static Dictionary<GameObject, IState[]> registry = new Dictionary<GameObject, IState[]>();
+        public static Dictionary<GameObject, IState[]> registry = new Dictionary<GameObject, IState[]>();
 
         public static void Register(GameObject gameObject, IState[] states) => registry[gameObject] = states;
 
@@ -21,7 +21,15 @@ namespace OmnicatLabs.Input {
         }
 
         public static GameObject AcquireController<T>(T state) where T : IState {
-            return registry.FirstOrDefault(pair => pair.Value.Contains(state)).Key;
+
+            return registry.FirstOrDefault(pair => {
+                Debug.Log(pair.Key.name);
+                Debug.Log(pair.Value.DebugFormat());
+                Debug.Log(state);
+                Debug.Log(state.GetType() == pair.Value[0].GetType());
+                Debug.Log(pair.Value.Contains(state));
+                return pair.Value.Contains(state);
+            }).Key;
         }
     }
 }

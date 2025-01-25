@@ -3,6 +3,10 @@ using UnityEngine;
 namespace OmnicatLabs.Input {
     public class MoveState : IState {
         public float speed;
+
+        public MoveState(PlayerControllerBase _controller) : base(_controller) {
+        }
+
         public override void Enter() {
             
         }
@@ -11,8 +15,8 @@ namespace OmnicatLabs.Input {
             throw new System.NotImplementedException();
         }
 
-        protected override void Initialize() {
-            base.Initialize();
+        public override void Initialize() {
+            
         }
 
         public override void Update() {

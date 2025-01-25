@@ -4,12 +4,14 @@ using System.Linq;
 namespace OmnicatLabs.Input {
   
     public abstract class IState {
+        public IState(PlayerControllerBase _controller) {
+            //controllerObject = controller.gameObject;
+            controller = _controller;
+        }
+
         protected GameObject controllerObject;
         protected PlayerControllerBase controller;
-        protected virtual void Initialize() {
-            controllerObject = StateRegistry.AcquireController(this);
-            controller = controllerObject.GetComponent<PlayerControllerBase>();
-        }
+        public abstract void Initialize();
         public abstract void Enter();
         public abstract void Update();
         public abstract void Exit();
@@ -24,7 +26,11 @@ namespace OmnicatLabs.Input {
 
         protected virtual void Start() {
             currentState = States[0];
-            StateRegistry.Register(gameObject, States);
+            //StateRegistry.Register(gameObject, States);
+            foreach (var state in States)
+            {
+                state.Initialize();
+            }
         }
 
         public T GetState<T>() where T: IState => States.OfType<T>().FirstOrDefault();
