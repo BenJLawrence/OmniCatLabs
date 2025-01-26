@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Linq;
+using Unity.Netcode;
 
 namespace OmnicatLabs.Input {
   
@@ -18,7 +19,7 @@ namespace OmnicatLabs.Input {
         public abstract void FixedUpdate();
     }
 
-    public abstract class PlayerControllerBase : MonoBehaviour {
+    public abstract class PlayerControllerBase : NetworkBehaviour {
         public abstract IState[] States { get; }
         public IState currentState {
             get; private set;
